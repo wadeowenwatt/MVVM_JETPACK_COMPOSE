@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.dagger.hilt)
     alias(libs.plugins.ksp)
 }
 
@@ -38,6 +39,9 @@ android {
     buildFeatures {
         compose = true
     }
+    hilt {
+        enableAggregatingTask = false
+    }
 }
 
 dependencies {
@@ -49,16 +53,24 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
     // Retrofit
-    implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.retrofit)
     implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+    // Image loading
     implementation(libs.coil.compose)
-    implementation(libs.kotlinx.serialization.json)
 
     // Hilt DI
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Moshi
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation (libs.converter.moshi)
+    ksp(libs.moshi.kotlin.codegen) // Moshi codegen
 
     // Test and debug
     testImplementation(libs.junit)
