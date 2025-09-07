@@ -1,5 +1,6 @@
 package wade.owen.watts.base_jetpack.di
 
+import com.skydoves.sandwich.retrofit.adapters.ApiResponseCallAdapterFactory
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -77,6 +78,12 @@ object NetworkModule {
         return MoshiConverterFactory.create(moshi)
     }
 
+    @Singleton
+    @Provides
+    fun provideCallAdapterFactory(): ApiResponseCallAdapterFactory {
+        return ApiResponseCallAdapterFactory.create()
+    }
+
     /**
      * Provides ApiServices client for Retrofit
      */
@@ -86,10 +93,12 @@ object NetworkModule {
         baseUrl: String,
         okHttpClient: OkHttpClient,
         converterFactory: Converter.Factory,
+        apiResponseCallAdapterFactory: ApiResponseCallAdapterFactory,
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(okHttpClient)
+            .addCallAdapterFactory(apiResponseCallAdapterFactory)
             .addConverterFactory(converterFactory)
             .build()
     }

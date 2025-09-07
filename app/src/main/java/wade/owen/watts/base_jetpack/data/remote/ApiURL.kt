@@ -1,5 +1,5 @@
 package wade.owen.watts.base_jetpack.data.remote
 
 object ApiURL {
-    const val BASE_URL = "https://kanye.rest/"
+    const val BASE_URL = "https://api.kanye.rest"
 }

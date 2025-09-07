@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.material3)
 
     // Retrofit
+    implementation(libs.sandwich)
+     implementation(libs.sandwich.retrofit)
     implementation(libs.retrofit)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
@@ -64,6 +66,7 @@ dependencies {
 
     // Hilt DI
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose) // Integration with Compose
     ksp(libs.hilt.compiler)
 
     // Moshi
