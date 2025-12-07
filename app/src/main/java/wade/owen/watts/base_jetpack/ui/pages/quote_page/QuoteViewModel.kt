@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.ui.pages.home
+package wade.owen.watts.base_jetpack.ui.pages.quote_page
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,11 +11,11 @@ import wade.owen.watts.base_jetpack.data.repository.KanyeWestRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class QuoteViewModel @Inject constructor(
     private val kanyeWestRepository: KanyeWestRepository
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> get() = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(QuoteUiState())
+    val uiState: StateFlow<QuoteUiState> get() = _uiState.asStateFlow()
 
     fun fetchRandomQuote() {
         viewModelScope.launch {

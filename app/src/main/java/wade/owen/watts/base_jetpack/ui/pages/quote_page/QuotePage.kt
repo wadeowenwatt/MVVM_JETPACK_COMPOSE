@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.ui.pages.home
+package wade.owen.watts.base_jetpack.ui.pages.quote_page
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier) {
-    val viewModel = hiltViewModel<HomeViewModel>()
+fun QuotePage(modifier: Modifier = Modifier) {
+    val viewModel = hiltViewModel<QuoteViewModel>()
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -60,5 +60,7 @@ fun HomePage(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun HomePagePreview(modifier: Modifier = Modifier) {
-    HomePage()
+
+
+    QuotePage()
 }
