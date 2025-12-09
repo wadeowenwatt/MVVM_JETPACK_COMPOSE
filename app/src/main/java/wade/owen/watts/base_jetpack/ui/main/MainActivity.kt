@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -31,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import wade.owen.watts.base_jetpack.router.AppNavHost
 import wade.owen.watts.base_jetpack.router.Destination
 import wade.owen.watts.base_jetpack.ui.theme.Jetpack_compose_mvvmTheme
+import wade.owen.watts.base_jetpack.ui.theme.fontFamily
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -44,8 +48,7 @@ class MainActivity : ComponentActivity() {
                 var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
+                    modifier = Modifier.fillMaxSize(), bottomBar = {
                         NavigationBar(
                             windowInsets = NavigationBarDefaults.windowInsets,
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -58,26 +61,33 @@ class MainActivity : ComponentActivity() {
                                         selectedDestination = index
                                     },
                                     icon = {
-                                        Icon(
-                                            destination.icon,
-                                            contentDescription = destination.contentDescription
+                                        Image(
+                                            painter = painterResource(destination.resourceId),
+                                            contentDescription = destination.contentDescription,
+                                            colorFilter = ColorFilter.tint(
+                                                if (selectedDestination == index) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
+                                                    alpha = 0.3f
+                                                )
+                                            )
                                         )
                                     },
-                                    label = { Text(destination.label) },
+                                    label = {
+                                        Text(
+                                            destination.label
+                                        )
+                                    },
                                     colors = NavigationBarItemDefaults.colors().copy(
-                                        unselectedIconColor = Color.Black.copy(alpha = 0.3f),
-                                        unselectedTextColor = Color.Black.copy(alpha = 0.3f),
+                                        unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
+                                            alpha = 0.3f
+                                        ),
                                         selectedIndicatorColor = Color.Transparent,
                                     )
                                 )
                             }
                         }
-                    }
-                ) { innerPadding ->
+                    }) { innerPadding ->
                     AppNavHost(
-                        navController,
-                        startDestination,
-                        modifier = Modifier.padding(innerPadding)
+                        navController, startDestination, modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
