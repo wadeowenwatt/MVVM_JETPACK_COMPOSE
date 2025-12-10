@@ -1,29 +1,26 @@
-package wade.owen.watts.base_jetpack.util
+package wade.owen.watts.base_jetpack.utils
 
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
-import android.os.LocaleList
 import wade.owen.watts.base_jetpack.data.local.SharedPrefs
 import java.util.Locale
 
 object LocaleManager {
 
     fun setLocale(context: Context): Context {
-        return updateResources(context, getLanguage(context))
+        return updateResources(context, getLanguage())
     }
 
     fun setNewLocale(context: Context, language: String): Context {
-        persistLanguage(context, language)
+        persistLanguage(language)
         return updateResources(context, language)
     }
 
-    private fun getLanguage(context: Context): String {
+    private fun getLanguage(): String {
         return SharedPrefs.getLanguageCode() ?: "en"
     }
 
-    private fun persistLanguage(context: Context, language: String) {
+    private fun persistLanguage(language: String) {
         SharedPrefs.setLanguageCode(language)
     }
 

@@ -32,16 +32,23 @@ fun Jetpack_compose_mvvmTheme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
+                context
+            )
         }
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
+    val typography = when {
+        darkTheme -> darkTypography
+        else -> lightTypography
+    }
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = typography,
         content = content
     )
 }

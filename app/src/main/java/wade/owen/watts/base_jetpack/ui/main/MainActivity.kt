@@ -5,7 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -23,15 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import wade.owen.watts.base_jetpack.data.models.enum.AppTheme
 import wade.owen.watts.base_jetpack.router.AppNavHost
 import wade.owen.watts.base_jetpack.router.Destination
 import wade.owen.watts.base_jetpack.ui.theme.Jetpack_compose_mvvmTheme
-import wade.owen.watts.base_jetpack.util.LocaleManager
+import wade.owen.watts.base_jetpack.utils.LocaleManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModels()
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleManager.setLocale(newBase))
@@ -40,8 +45,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            Jetpack_compose_mvvmTheme(dynamicColor = false) {
+            val isDarkTheme: Boolean? = when (viewModel.currentTheme.value) {
+                AppTheme.DARK -> true
+                AppTheme.LIGHT -> false
+                else -> null
+            }
+            Jetpack_compose_mvvmTheme(
+                dynamicColor = false,
+                darkTheme = isDarkTheme ?: isSystemInDarkTheme(),
+            ) {
                 val navController = rememberNavController()
                 val startDestination = Destination.DIARY
                 var selectedDestination by rememberSaveable {
@@ -95,6 +109,7 @@ class MainActivity : ComponentActivity() {
                     AppNavHost(
                         navController,
                         startDestination,
+                        viewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
