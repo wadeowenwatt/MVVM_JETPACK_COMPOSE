@@ -1,24 +1,20 @@
 package wade.owen.watts.base_jetpack.ui.main
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,17 +23,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import wade.owen.watts.base_jetpack.router.AppNavHost
 import wade.owen.watts.base_jetpack.router.Destination
 import wade.owen.watts.base_jetpack.ui.theme.Jetpack_compose_mvvmTheme
-import wade.owen.watts.base_jetpack.ui.theme.fontFamily
+import wade.owen.watts.base_jetpack.util.LocaleManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleManager.setLocale(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -45,7 +44,11 @@ class MainActivity : ComponentActivity() {
             Jetpack_compose_mvvmTheme(dynamicColor = false) {
                 val navController = rememberNavController()
                 val startDestination = Destination.DIARY
-                var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+                var selectedDestination by rememberSaveable {
+                    mutableIntStateOf(
+                        startDestination.ordinal
+                    )
+                }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(), bottomBar = {
@@ -62,7 +65,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     icon = {
                                         Image(
-                                            painter = painterResource(destination.resourceId),
+                                            painter = painterResource(
+                                                destination.resourceId
+                                            ),
                                             contentDescription = destination.contentDescription,
                                             colorFilter = ColorFilter.tint(
                                                 if (selectedDestination == index) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
@@ -76,18 +81,21 @@ class MainActivity : ComponentActivity() {
                                             destination.label
                                         )
                                     },
-                                    colors = NavigationBarItemDefaults.colors().copy(
-                                        unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
-                                            alpha = 0.3f
-                                        ),
-                                        selectedIndicatorColor = Color.Transparent,
-                                    )
+                                    colors = NavigationBarItemDefaults.colors()
+                                        .copy(
+                                            unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
+                                                alpha = 0.3f
+                                            ),
+                                            selectedIndicatorColor = Color.Transparent,
+                                        )
                                 )
                             }
                         }
                     }) { innerPadding ->
                     AppNavHost(
-                        navController, startDestination, modifier = Modifier.padding(innerPadding)
+                        navController,
+                        startDestination,
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
