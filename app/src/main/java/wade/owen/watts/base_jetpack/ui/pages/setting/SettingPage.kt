@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.data.models.enum.AppTheme
+import wade.owen.watts.base_jetpack.global.LocalMainViewModel
 import wade.owen.watts.base_jetpack.ui.main.MainActivity
 import wade.owen.watts.base_jetpack.ui.main.MainViewModel
 
@@ -28,6 +29,7 @@ fun SettingPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SettingViewModel>()
+    val mainVM = LocalMainViewModel.current
 
     Scaffold() { innerPadding ->
         Column(
@@ -45,13 +47,13 @@ fun SettingPage(
             // Text test multi language change
             Text(stringResource(R.string.list_diary_title))
             Box(Modifier.height(20.dp))
-            Button(onClick = { mainViewModel.changeTheme(AppTheme.DARK) }) {
+            Button(onClick = { mainVM.changeTheme(AppTheme.DARK) }) {
                 Text(text = "Dark", color = Color.Black)
             }
-            Button(onClick = { mainViewModel.changeTheme(AppTheme.LIGHT) }) {
+            Button(onClick = { mainVM.changeTheme(AppTheme.LIGHT) }) {
                 Text(text = "Light", color = Color.Black)
             }
-            Button(onClick = { mainViewModel.changeTheme(AppTheme.SYSTEM) }) {
+            Button(onClick = { mainVM.changeTheme(AppTheme.SYSTEM) }) {
                 Text(text = "System", color = Color.Black)
             }
         }

@@ -33,7 +33,8 @@ fun AppNavHost(
 ) {
     NavHost(
         navController,
-        startDestination = startDestination.route
+        startDestination = startDestination.route,
+        route = "root_graph",
     ) {
         Destination.entries.forEach { destination ->
             composable(destination.route) {

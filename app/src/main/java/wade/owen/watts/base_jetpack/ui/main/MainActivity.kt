@@ -10,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
@@ -17,18 +18,20 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import wade.owen.watts.base_jetpack.data.models.enum.AppTheme
+import wade.owen.watts.base_jetpack.global.ProvideMainViewModel
 import wade.owen.watts.base_jetpack.router.AppNavHost
 import wade.owen.watts.base_jetpack.router.Destination
 import wade.owen.watts.base_jetpack.ui.theme.Jetpack_compose_mvvmTheme
@@ -64,54 +67,56 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(), bottomBar = {
-                        NavigationBar(
-                            windowInsets = NavigationBarDefaults.windowInsets,
-                            containerColor = MaterialTheme.colorScheme.primary,
-                        ) {
-                            Destination.entries.forEachIndexed { index, destination ->
-                                NavigationBarItem(
-                                    selected = selectedDestination == index,
-                                    onClick = {
-                                        navController.navigate(route = destination.route)
-                                        selectedDestination = index
-                                    },
-                                    icon = {
-                                        Image(
-                                            painter = painterResource(
-                                                destination.resourceId
-                                            ),
-                                            contentDescription = destination.contentDescription,
-                                            colorFilter = ColorFilter.tint(
-                                                if (selectedDestination == index) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
-                                                    alpha = 0.3f
+                ProvideMainViewModel(viewModel) {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(), bottomBar = {
+                            NavigationBar(
+                                windowInsets = NavigationBarDefaults.windowInsets,
+                                containerColor = MaterialTheme.colorScheme.primary,
+                            ) {
+                                Destination.entries.forEachIndexed { index, destination ->
+                                    NavigationBarItem(
+                                        selected = selectedDestination == index,
+                                        onClick = {
+                                            navController.navigate(route = destination.route)
+                                            selectedDestination = index
+                                        },
+                                        icon = {
+                                            Image(
+                                                painter = painterResource(
+                                                    destination.resourceId
+                                                ),
+                                                contentDescription = destination.contentDescription,
+                                                colorFilter = ColorFilter.tint(
+                                                    if (selectedDestination == index) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
+                                                        alpha = 0.3f
+                                                    )
                                                 )
                                             )
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            destination.label
-                                        )
-                                    },
-                                    colors = NavigationBarItemDefaults.colors()
-                                        .copy(
-                                            unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
-                                                alpha = 0.3f
-                                            ),
-                                            selectedIndicatorColor = Color.Transparent,
-                                        )
-                                )
+                                        },
+                                        label = {
+                                            Text(
+                                                destination.label
+                                            )
+                                        },
+                                        colors = NavigationBarItemDefaults.colors()
+                                            .copy(
+                                                unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
+                                                    alpha = 0.3f
+                                                ),
+                                                selectedIndicatorColor = Color.Transparent,
+                                            )
+                                    )
+                                }
                             }
-                        }
-                    }) { innerPadding ->
-                    AppNavHost(
-                        navController,
-                        startDestination,
-                        viewModel,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                        }) { innerPadding ->
+                        AppNavHost(
+                            navController,
+                            startDestination,
+                            viewModel,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                 }
             }
         }
