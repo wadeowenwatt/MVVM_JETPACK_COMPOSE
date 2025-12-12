@@ -19,13 +19,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.data.models.enum.AppTheme
 import wade.owen.watts.base_jetpack.global.LocalMainViewModel
-import wade.owen.watts.base_jetpack.ui.main.MainActivity
-import wade.owen.watts.base_jetpack.ui.main.MainViewModel
 
 @Composable
 fun SettingPage(
     modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SettingViewModel>()
@@ -65,13 +62,5 @@ fun SettingPage(
 @Preview(showBackground = true)
 @Composable
 fun SettingPagePreview() {
-    // SettingPage() // Preview might be broken without a ViewModel instance, but we can't easily mock it here without DI or a fake.
-    // Commenting out for now as creating a ViewModel manually is tricky with Hilt or we need a wrapper.
-    // Alternatively, we could default the parameter to null or use a composition local, but aiming for correctness first.
-    // For now, I will just leave it empty or comment it out to avoid build errors if I can't construct it.
-    // Actually, MainViewModel has @Inject constructor() with no args, so we might be able to instantiate it directly if we weren't using HiltViewModel inside?
-    // But it inherits ViewModel.
-    // Let's just comment out the call in preview for safety or try to instantiate it.
-    val mainViewModel = MainViewModel() // This should work since it has an empty @Inject constructor
-    SettingPage(mainViewModel = mainViewModel)
+    SettingPage()
 }

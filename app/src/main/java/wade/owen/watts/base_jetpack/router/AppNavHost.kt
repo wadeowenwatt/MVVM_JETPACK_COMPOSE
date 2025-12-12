@@ -1,6 +1,7 @@
 package wade.owen.watts.base_jetpack.router
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,23 +13,23 @@ import wade.owen.watts.base_jetpack.ui.pages.diary.DiaryPage
 import wade.owen.watts.base_jetpack.ui.pages.quote_page.QuotePage
 import wade.owen.watts.base_jetpack.ui.pages.setting.SettingPage
 
+@Immutable
 enum class Destination(
     val route: String,
-    val label: String,
+    val resourceLabel: Int,
     val resourceId: Int,
     val contentDescription: String
 ) {
-    DIARY("diary", "Diary", R.drawable.ic_list, "List Diary"),
-    CALENDAR("calendar", "Calendar", R.drawable.ic_calendar, "Calendar Page"),
-    QUOTES("quotes", "Quotes", R.drawable.ic_quote, "Quotes"),
-    SETTING("setting", "Setting", R.drawable.ic_setting, "Setting")
+    DIARY("diary", R.string.bottom_nav_diary, R.drawable.ic_list, "List Diary"),
+    CALENDAR("calendar", R.string.bottom_nav_calendar, R.drawable.ic_calendar, "Calendar Page"),
+    QUOTES("quotes", R.string.bottom_nav_quotes, R.drawable.ic_quote, "Quotes"),
+    SETTING("setting", R.string.bottom_nav_setting, R.drawable.ic_setting, "Setting")
 }
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     startDestination: Destination,
-    mainViewModel: MainViewModel, // Injected ViewModel
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -42,7 +43,7 @@ fun AppNavHost(
                     Destination.DIARY -> DiaryPage(modifier)
                     Destination.CALENDAR -> CalendarPage()
                     Destination.QUOTES -> QuotePage()
-                    Destination.SETTING -> SettingPage(mainViewModel = mainViewModel)
+                    Destination.SETTING -> SettingPage()
                 }
             }
         }

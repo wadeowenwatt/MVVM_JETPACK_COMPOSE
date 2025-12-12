@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Minimalism Diary</string>
     <string name="list_diary_title">Diary</string>
+    <string name="bottom_nav_diary">Diary</string>
+    <string name="bottom_nav_calendar">Calendar</string>
+    <string name="bottom_nav_quotes">Quotes</string>
+    <string name="bottom_nav_setting">Setting</string>
 </resources>

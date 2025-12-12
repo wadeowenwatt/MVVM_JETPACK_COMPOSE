@@ -2,12 +2,14 @@ package wade.owen.watts.base_jetpack.ui.main
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
@@ -23,11 +25,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import wade.owen.watts.base_jetpack.data.models.enum.AppTheme
@@ -96,7 +99,7 @@ class MainActivity : ComponentActivity() {
                                         },
                                         label = {
                                             Text(
-                                                destination.label
+                                                stringResource(destination.resourceLabel)
                                             )
                                         },
                                         colors = NavigationBarItemDefaults.colors()
@@ -113,7 +116,6 @@ class MainActivity : ComponentActivity() {
                         AppNavHost(
                             navController,
                             startDestination,
-                            viewModel,
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
