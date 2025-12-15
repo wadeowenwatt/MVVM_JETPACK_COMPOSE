@@ -19,7 +19,6 @@ class MainViewModel @Inject constructor() : ViewModel() {
     )
     val uiState: StateFlow<MainUiState> get() = _uiState.asStateFlow()
 
-
     fun changeTheme(theme: AppTheme) {
         if (theme != _uiState.value.theme) {
             _uiState.value = _uiState.value.copy(theme)

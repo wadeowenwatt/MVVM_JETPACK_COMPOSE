@@ -1,8 +1,17 @@
 package wade.owen.watts.base_jetpack.ui.pages.diary
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -11,11 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import wade.owen.watts.base_jetpack.R
+import wade.owen.watts.base_jetpack.ui.commons.AppHeader
 
 @Composable
 fun DiaryPage(modifier: Modifier = Modifier) {
@@ -36,19 +47,72 @@ fun DiaryPage(modifier: Modifier = Modifier) {
             }
         },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(24.dp)
-        ) {
-            Text(
-                stringResource(R.string.list_diary_title),
-                style = MaterialTheme.typography.headlineSmall
+        Column {
+            AppHeader(
+                Modifier.padding(innerPadding)
             )
+            LazyColumn {
+                item {
+
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun DiaryItem(modifier: Modifier = Modifier) {
+    val colorTheme = MaterialTheme.colorScheme
+
+    Box(
+        modifier = modifier
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = colorTheme.secondary.copy(alpha = 0.1f)
+                )
+            )
+            .background(colorTheme.primary)
+    ) {
+        Row {
+            Column {
+                Text("Title")
+                Text("Sub title")
+            }
+            Row {
+                ActionButtonDiaryItem(
+                    Modifier.padding(8.dp),
+                    painterResource = painterResource(R.drawable.ic_edit)
+                )
+                ActionButtonDiaryItem(
+                    Modifier.padding(8.dp),
+                    painterResource = painterResource(R.drawable.ic_recycle_bin)
+                )
+            }
         }
     }
 }
 
+@Composable
+fun ActionButtonDiaryItem(
+    modifier: Modifier = Modifier,
+    painterResource: Painter
+) {
+    Image(
+        painterResource,
+        modifier = modifier
+            .width(16.dp)
+            .height(16.dp),
+        contentDescription = "Edit Button"
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DiaryItemPreview(modifier: Modifier = Modifier) {
+    DiaryItem()
+}
 
 @Preview(showBackground = true)
 @Composable

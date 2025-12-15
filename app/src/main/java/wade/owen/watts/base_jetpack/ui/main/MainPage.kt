@@ -34,7 +34,6 @@ fun MainPage(modifier: Modifier = Modifier) {
         )
     }
 
-
     Scaffold(
         modifier = modifier.fillMaxSize(), bottomBar = {
             NavigationBar(

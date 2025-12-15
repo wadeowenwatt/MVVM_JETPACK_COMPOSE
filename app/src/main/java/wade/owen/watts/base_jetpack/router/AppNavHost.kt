@@ -7,7 +7,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import wade.owen.watts.base_jetpack.R
-import wade.owen.watts.base_jetpack.ui.main.MainViewModel
 import wade.owen.watts.base_jetpack.ui.pages.calendar.CalendarPage
 import wade.owen.watts.base_jetpack.ui.pages.diary.DiaryPage
 import wade.owen.watts.base_jetpack.ui.pages.quote_page.QuotePage
