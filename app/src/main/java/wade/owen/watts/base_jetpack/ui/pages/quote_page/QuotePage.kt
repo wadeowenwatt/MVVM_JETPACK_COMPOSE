@@ -61,6 +61,5 @@ fun QuotePage(modifier: Modifier = Modifier) {
 @Composable
 fun HomePagePreview(modifier: Modifier = Modifier) {
 
-
     QuotePage()
 }

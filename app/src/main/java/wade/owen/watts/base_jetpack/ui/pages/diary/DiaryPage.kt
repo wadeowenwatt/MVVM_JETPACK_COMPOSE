@@ -83,11 +83,13 @@ fun DiaryItem(modifier: Modifier = Modifier) {
             Row {
                 ActionButtonDiaryItem(
                     Modifier.padding(8.dp),
-                    painterResource = painterResource(R.drawable.ic_edit)
+                    painterResource = painterResource(R.drawable.ic_edit),
+                    contentDescription = "Edit Button"
                 )
                 ActionButtonDiaryItem(
                     Modifier.padding(8.dp),
-                    painterResource = painterResource(R.drawable.ic_recycle_bin)
+                    painterResource = painterResource(R.drawable.ic_recycle_bin),
+                    contentDescription = "Delete Button"
                 )
             }
         }
@@ -97,14 +99,15 @@ fun DiaryItem(modifier: Modifier = Modifier) {
 @Composable
 fun ActionButtonDiaryItem(
     modifier: Modifier = Modifier,
-    painterResource: Painter
+    painterResource: Painter,
+    contentDescription: String,
 ) {
     Image(
         painterResource,
         modifier = modifier
             .width(16.dp)
             .height(16.dp),
-        contentDescription = "Edit Button"
+        contentDescription = contentDescription
     )
 }
 

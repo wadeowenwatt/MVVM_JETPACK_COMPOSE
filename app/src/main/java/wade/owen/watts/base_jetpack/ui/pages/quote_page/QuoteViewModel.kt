@@ -21,13 +21,17 @@ class QuoteViewModel @Inject constructor(
         viewModelScope.launch {
             kanyeWestRepository.getRandomQuote(
                 onStart = {
-                    _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = true,
+                        errorMessage = null
+                    )
                 },
                 onComplete = {
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 },
                 onError = { errorMessage ->
-                    _uiState.value = _uiState.value.copy(errorMessage = errorMessage)
+                    _uiState.value =
+                        _uiState.value.copy(errorMessage = errorMessage)
                 }
             ).collect { quoteEntity ->
                 _uiState.value = _uiState.value.copy(quote = quoteEntity.quote)

@@ -56,7 +56,7 @@ dependencies {
 
     // Retrofit
     implementation(libs.sandwich)
-     implementation(libs.sandwich.retrofit)
+    implementation(libs.sandwich.retrofit)
     implementation(libs.retrofit)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
@@ -66,13 +66,18 @@ dependencies {
 
     // Hilt DI
     implementation(libs.hilt.android)
-    implementation(libs.androidx.hilt.navigation.compose) // Integration with Compose
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
+
+    // Room
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
 
     // Moshi
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
-    implementation (libs.converter.moshi)
+    implementation(libs.converter.moshi)
     ksp(libs.moshi.kotlin.codegen) // Moshi codegen
 
     // Test and debug

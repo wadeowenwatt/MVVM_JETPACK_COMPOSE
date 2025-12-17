@@ -24,6 +24,7 @@ androidHilt = "2.57.1"
 ksp = "2.2.10-2.0.2"
 sandwich = "2.1.2"
 sandwichRetrofit = "2.1.2"
+roomVersion = "2.8.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,6 +57,9 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "andro
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "androidHilt"}
 sandwich = { module = "com.github.skydoves:sandwich", version.ref = "sandwich" }
 sandwich-retrofit = { module = "com.github.skydoves:sandwich-retrofit", version.ref = "sandwichRetrofit" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
+androidx-room-runtime = {group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
+androidx-room-ktx = {group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
