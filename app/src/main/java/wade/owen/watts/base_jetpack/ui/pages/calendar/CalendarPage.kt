@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
 import android.view.MotionEvent
-import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.CubeRenderer
+import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.IcosahedronRenderer
 
 @Composable
 fun CalendarPage(modifier: Modifier = Modifier) {
@@ -21,7 +21,7 @@ fun Cube3DView(modifier: Modifier = Modifier) {
         factory = { context ->
             GLSurfaceView(context).apply {
                 setEGLContextClientVersion(3)
-                val renderer = CubeRenderer()
+                val renderer = IcosahedronRenderer()
                 setRenderer(renderer)
                 renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 

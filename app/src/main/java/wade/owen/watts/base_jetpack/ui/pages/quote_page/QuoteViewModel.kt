@@ -3,6 +3,7 @@ package wade.owen.watts.base_jetpack.ui.pages.quote_page
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,19 +20,27 @@ class QuoteViewModel @Inject constructor(
 
     fun fetchRandomQuote() {
         viewModelScope.launch {
-            kanyeWestRepository.getRandomQuote(
-                onStart = {
-                    _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-                },
-                onComplete = {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                },
-                onError = { errorMessage ->
-                    _uiState.value = _uiState.value.copy(errorMessage = errorMessage)
+            val defer = async {
+                kanyeWestRepository.getRandomQuote(
+                    onStart = {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = true,
+                            errorMessage = null
+                        )
+                    },
+                    onComplete = {
+                        _uiState.value = _uiState.value.copy(isLoading = false)
+                    },
+                    onError = { errorMessage ->
+                        _uiState.value =
+                            _uiState.value.copy(errorMessage = errorMessage)
+                    }
+                ).collect { quoteEntity ->
+                    _uiState.value =
+                        _uiState.value.copy(quote = quoteEntity.quote)
                 }
-            ).collect { quoteEntity ->
-                _uiState.value = _uiState.value.copy(quote = quoteEntity.quote)
             }
+            defer.cancel()
         }
     }
 }
