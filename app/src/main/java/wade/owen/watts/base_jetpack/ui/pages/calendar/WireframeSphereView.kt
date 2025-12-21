@@ -1,29 +1,25 @@
 package wade.owen.watts.base_jetpack.ui.pages.calendar
 
 import android.opengl.GLSurfaceView
-import androidx.compose.material3.Scaffold
+import android.view.MotionEvent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-
-import android.view.MotionEvent
-import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.IcosahedronRenderer
+import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.WireframeSphereRenderer
 
 @Composable
-fun CalendarPage(modifier: Modifier = Modifier) {
-    WireframeSphereView(modifier)
-}
-
-@Composable
-fun Cube3DView(modifier: Modifier = Modifier) {
+fun WireframeSphereView(modifier: Modifier = Modifier) {
     AndroidView(
         modifier = modifier,
         factory = { context ->
             GLSurfaceView(context).apply {
                 setEGLContextClientVersion(3)
-                val renderer = IcosahedronRenderer()
+                
+                val renderer = WireframeSphereRenderer()
                 setRenderer(renderer)
-                renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+                
+                // Continuous rendering required for the idle animation (auto-rotation)
+                renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
                 var previousX = 0f
                 var previousY = 0f
@@ -39,14 +35,14 @@ fun Cube3DView(modifier: Modifier = Modifier) {
                             val dx = event.x - previousX
                             val dy = event.y - previousY
 
-                            // factor to scale the rotation
-                            val touchScaleFactor = 180.0f / 320
-                            renderer.setRotation(
-                                dx * touchScaleFactor,
-                                dy * touchScaleFactor
-                            )
-                            requestRender()
-
+                            // Rotation Scale Factor
+                            // Adjust sensitivity as needed
+                            val touchScaleFactor = 0.5f
+                            
+                            // Note: Dragging horizontally (x change) rotates around Y axis
+                            // Dragging vertically (y change) rotates around X axis
+                            renderer.rotate(dx * touchScaleFactor, dy * touchScaleFactor)
+                            
                             previousX = event.x
                             previousY = event.y
                         }
