@@ -4,6 +4,7 @@ import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.SystemClock
+import wade.owen.watts.base_jetpack.ui.pages.calendar.shader.NeonShader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGLConfig
@@ -74,7 +75,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
 
         // 3. Generate Sphere Data
         // Increase segments slightly for better look: 8 lat, 12 long
-        val (vertices, indices) = SphereGridGenerator.generateSphere(1.0f, 8, 12)
+        val (vertices, indices) = SphereGridGenerator.generateSphere(1.0f, 4, 8)
         indexCount = indices.size
 
         // 4. Setup Buffers
@@ -125,7 +126,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         
         // Camera setup (LookAt)
         // Position camera at z=5
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 5f, 0f, 0f, 0f, 0f, 1f, 0f)
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 10f, 0f, 0f, 0f, 0f, 2f, 0f)
     }
 
     override fun onDrawFrame(gl: GL10?) {

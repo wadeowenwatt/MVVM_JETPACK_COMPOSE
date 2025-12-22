@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer
+package wade.owen.watts.base_jetpack.ui.pages.calendar.shader
 
 object NeonShader {
 
