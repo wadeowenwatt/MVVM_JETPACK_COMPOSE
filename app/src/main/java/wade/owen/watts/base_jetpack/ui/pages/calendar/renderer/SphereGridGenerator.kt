@@ -1,5 +1,6 @@
 package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer
 
+import android.util.Log
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -52,7 +53,7 @@ object SphereGridGenerator {
                 // Color (3, 4, 5, 6) - Default Neon Blue/Cyber color
                 // We'll calculate a gradient based on Y position (height)
                 var intensity = 0.5f + 0.5f * sin(v * Math.PI.toFloat()) // brighter at equator
-                
+
                 // Neon Cyan/Blue base
                 vertexData[vertexIndex * 7 + 3] = 0.0f          // R
                 vertexData[vertexIndex * 7 + 4] = 0.8f + (0.2f * intensity) // G
@@ -79,7 +80,7 @@ object SphereGridGenerator {
                 // but here for wireframe, let's keep it simple.
                 // If we want a seamless loop, the last vertex in the row should connect to the first?
                 // Our loop above goes 0..longSegments, so index `longSegments` overlaps index `0` spatially.
-                
+
                 if (x < longSegments) {
                     indices.add(current)
                     indices.add(nextHorizontal)
@@ -91,6 +92,148 @@ object SphereGridGenerator {
             }
         }
 
+        Log.i("Indices: ", indices.toString())
+
         return Pair(vertexData, indices.toIntArray())
     }
+
+    fun generateCustomSphere(
+        radius: Float
+    ): Pair<FloatArray, IntArray> {
+
+        val VERTEX_STRIDE = 7
+        val vertexData = FloatArray(20 * VERTEX_STRIDE)
+        val indices = ArrayList<Int>()
+
+        var v = 0
+
+        fun putVertex(
+            x: Float, y: Float, z: Float,
+            r: Float, g: Float, b: Float, a: Float
+        ) {
+            vertexData[v * 7 + 0] = x
+            vertexData[v * 7 + 1] = y
+            vertexData[v * 7 + 2] = z
+            vertexData[v * 7 + 3] = r
+            vertexData[v * 7 + 4] = g
+            vertexData[v * 7 + 5] = b
+            vertexData[v * 7 + 6] = a
+            v++
+        }
+
+        // ---------- 1. Generate vertices ----------
+
+        // Poles
+        putVertex(0f, radius, 0f, 1f, 1f, 1f, 1f)   // North
+        putVertex(0f, -radius, 0f, 1f, 0f, 0.2f, 1f)  // South (temp, index 1 for now)
+
+        val northIndex = 0
+        val southIndex = 19
+
+        val ringCount = 6
+        val step = (2.0 * Math.PI / ringCount).toFloat()
+
+        val yUpper = radius * 0.5f
+        val yEquator = 0f
+        val yLower = -radius * 0.5f
+
+        fun ringRadius(y: Float) =
+            kotlin.math.sqrt(radius * radius - y * y)
+
+        // Upper ring (no offset)
+        val rUpper = ringRadius(yUpper)
+        for (i in 0 until ringCount) {
+            val angle = i * step
+            putVertex(
+                (rUpper * cos(angle)).toFloat(),
+                yUpper,
+                (rUpper * sin(angle)).toFloat(),
+                0.2f, 1f, 0.3f, 0.8f
+            )
+        }
+
+        // Equator ring (offset by half step)
+        val rEquator = radius
+        val offset = step / 2f
+        for (i in 0 until ringCount) {
+            val angle = i * step + offset
+            putVertex(
+                (rEquator * cos(angle)).toFloat(),
+                yEquator,
+                (rEquator * sin(angle)).toFloat(),
+                0.4f, 1f, 1f, 1f
+            )
+        }
+
+        // Lower ring (same alignment as upper)
+        val rLower = ringRadius(yLower)
+        for (i in 0 until ringCount) {
+            val angle = i * step
+            putVertex(
+                (rLower * cos(angle)).toFloat(),
+                yLower,
+                (rLower * sin(angle)).toFloat(),
+                0.2f, 0.8f, 1f, 1f
+            )
+        }
+
+        // Move south pole to index 19
+        vertexData.copyInto(
+            vertexData,
+            destinationOffset = 19 * 7,
+            startIndex = 7,
+            endIndex = 14
+        )
+
+        // ---------- 2. Generate indices (triangles) ----------
+
+        val upperStart = 1
+        val equatorStart = 7
+        val lowerStart = 13
+
+        // North cap
+        for (i in 0 until ringCount) {
+            val a = upperStart + i
+            val b = upperStart + (i + 1) % ringCount
+            indices += northIndex
+            indices += a
+            indices += b
+        }
+
+        // Upper ↔ Equator
+        for (i in 0 until ringCount) {
+            val u0 = upperStart + i
+            val u1 = upperStart + (i + 1) % ringCount
+            val e0 = equatorStart + i
+            val e1 = equatorStart + (i + 1) % ringCount
+
+            indices += u0; indices += e0; indices += u1
+            indices += u1; indices += e0; indices += e1
+        }
+
+        // Equator ↔ Lower
+        for (i in 0 until ringCount) {
+            val e0 = equatorStart + i
+            val e1 = equatorStart + (i + 1) % ringCount
+            val l0 = lowerStart + i
+            val l1 = lowerStart + (i + 1) % ringCount
+
+            indices += e0; indices += l0; indices += e1
+            indices += e1; indices += l0; indices += l1
+        }
+
+        // South cap
+        for (i in 0 until ringCount) {
+            val a = lowerStart + i
+            val b = lowerStart + (i + 1) % ringCount
+            indices += a
+            indices += southIndex
+            indices += b
+        }
+
+        Log.i("Indices: ", indices.toString())
+
+        return Pair(vertexData, indices.toIntArray())
+    }
+
 }

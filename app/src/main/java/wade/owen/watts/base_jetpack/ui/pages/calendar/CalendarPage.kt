@@ -8,6 +8,20 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 import android.view.MotionEvent
 import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.IcosahedronRenderer
+import android.content.Context
+import android.view.Choreographer
+import android.view.SurfaceView
+import com.google.android.filament.Skybox
+import com.google.android.filament.utils.ModelViewer
+import java.nio.ByteBuffer
+import java.nio.channels.Channels
+import com.google.android.filament.utils.Utils
+import java.nio.ByteOrder
+import com.google.android.filament.LightManager
+import com.google.android.filament.EntityManager
+import com.google.android.filament.Colors
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun CalendarPage(modifier: Modifier = Modifier) {
@@ -56,4 +70,158 @@ fun Cube3DView(modifier: Modifier = Modifier) {
             }
         }
     )
+}
+
+
+@Composable
+fun Blender3DModelView(
+    assetFileName: String,
+    modifier: Modifier = Modifier
+) {
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            FilamentModelView(context, assetFileName)
+        }
+    )
+}
+
+
+private class FilamentModelView(
+    context: Context,
+    private val assetFileName: String
+) : SurfaceView(context), Choreographer.FrameCallback {
+
+    private var modelViewer: ModelViewer? = null
+    private val choreographer = Choreographer.getInstance()
+
+    private val lightEntities = IntArray(3)
+
+    init {
+        // Essential: Initialize Filament Utils
+        Utils.init()
+        
+        // Initialize Filament model viewer
+        modelViewer = ModelViewer(this)
+
+        // Enable Bloom
+        val view = modelViewer!!.view
+        view.bloomOptions = view.bloomOptions.apply {
+            enabled = true
+        }
+
+        // Create colored lights
+        createColoredLights()
+
+        // Load the GLB file
+        loadGlb()
+
+        // Set background to black for better contrast with the colored lights
+        modelViewer?.scene?.skybox = Skybox.Builder()
+            .color(0.0f, 0.0f, 0.0f, 1.0f)
+            .build(modelViewer!!.engine)
+
+        // Make it full screen in the view or transform to unit cube
+        modelViewer?.transformToUnitCube()
+    }
+
+    private fun createColoredLights() {
+        val engine = modelViewer!!.engine
+        val entityManager = EntityManager.get()
+        entityManager.create(lightEntities)
+
+        // 1. Magenta Light (Top Left)
+        LightManager.Builder(LightManager.Type.POINT)
+            .color(1.0f, 0.0f, 1.0f) // Magenta
+            .intensity(50_000.0f) // High intensity for bloom
+            .position(-2.0f, 2.0f, 2.0f)
+            .falloff(10.0f)
+            .build(engine, lightEntities[0])
+
+        // 2. Cyan Light (Bottom Right)
+        LightManager.Builder(LightManager.Type.POINT)
+            .color(0.0f, 1.0f, 1.0f) // Cyan
+            .intensity(50_000.0f)
+            .position(2.0f, -2.0f, 2.0f)
+            .falloff(10.0f)
+            .build(engine, lightEntities[1])
+
+        // 3. Yellow Light (Top Right)
+        LightManager.Builder(LightManager.Type.POINT)
+            .color(1.0f, 1.0f, 0.0f) // Yellow
+            .intensity(50_000.0f)
+            .position(2.0f, 2.0f, -2.0f)
+            .falloff(10.0f)
+            .build(engine, lightEntities[2])
+
+        // Add lights to the scene
+        modelViewer?.scene?.addEntities(lightEntities)
+        
+        // IMPORTANT: Disable the default IBL (which is white) so our colored lights show up
+        modelViewer?.scene?.indirectLight?.intensity = 0.0f
+    }
+
+    private fun loadGlb() {
+        try {
+            val assets = context.assets
+            assets.open(assetFileName).use { input ->
+                val bytes = input.readBytes()
+                val buffer = ByteBuffer.allocateDirect(bytes.size)
+                buffer.order(ByteOrder.nativeOrder())
+                buffer.put(bytes)
+                buffer.flip()
+                modelViewer?.loadModelGlb(buffer)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        choreographer.postFrameCallback(this)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        choreographer.removeFrameCallback(this)
+        
+        // Destroy lights
+        val engine = modelViewer?.engine
+        val entityManager = EntityManager.get()
+        engine?.let {
+            it.destroyEntity(lightEntities[0])
+            it.destroyEntity(lightEntities[1])
+            it.destroyEntity(lightEntities[2])
+        }
+        entityManager.destroy(lightEntities)
+        
+        modelViewer?.destroyModel()
+        modelViewer = null
+    }
+
+    override fun doFrame(frameTimeNanos: Long) {
+        choreographer.postFrameCallback(this)
+        
+        // Auto-rotate the model if possible
+        modelViewer?.asset?.root?.let { rootEntity ->
+            val transformManager = modelViewer!!.engine.transformManager
+            val instance = transformManager.getInstance(rootEntity)
+            
+            // Apply continuous rotation around Y axis
+            val transform = FloatArray(16)
+            transformManager.getTransform(instance, transform)
+            
+            // Rotate 0.5 degrees per frame
+            android.opengl.Matrix.rotateM(transform, 0, 0.5f, 0f, 1f, 0f)
+            transformManager.setTransform(instance, transform)
+        }
+
+        modelViewer?.render(frameTimeNanos)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        modelViewer?.onTouchEvent(event)
+        return true
+    }
 }

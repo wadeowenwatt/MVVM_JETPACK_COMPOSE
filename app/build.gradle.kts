@@ -64,6 +64,11 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
+    // Filament
+    implementation(libs.filament.android)
+    implementation(libs.filament.utils.android)
+    implementation(libs.filament.gltfio.android)
+
     // Hilt DI
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose) // Integration with Compose

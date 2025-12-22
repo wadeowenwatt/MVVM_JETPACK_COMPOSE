@@ -46,6 +46,13 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         
         // Disable depth test for wireframe to avoid z-fighting issues
         GLES30.glDisable(GLES30.GL_DEPTH_TEST)
+
+        // This will enable blending using for render glow effect
+        GLES30.glEnable(GLES30.GL_BLEND)
+        GLES30.glBlendFunc(
+            GLES30.GL_ONE,
+            GLES30.GL_ONE
+        )
         
         // Use thick lines
         GLES30.glLineWidth(5f) 
@@ -74,8 +81,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         isPointHandle = GLES30.glGetUniformLocation(programId, "uIsPoint")
 
         // 3. Generate Sphere Data
-        // Increase segments slightly for better look: 8 lat, 12 long
-        val (vertices, indices) = SphereGridGenerator.generateSphere(1.0f, 4, 8)
+        val (vertices, indices) = SphereGridGenerator.generateCustomSphere(1.0f)
         indexCount = indices.size
 
         // 4. Setup Buffers

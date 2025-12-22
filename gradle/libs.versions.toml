@@ -24,8 +24,12 @@ androidHilt = "2.57.1"
 ksp = "2.2.10-2.0.2"
 sandwich = "2.1.2"
 sandwichRetrofit = "2.1.2"
+filament = "1.68.2"
 
 [libraries]
+filament-android = { module = "com.google.android.filament:filament-android", version.ref = "filament" }
+filament-utils-android = { module = "com.google.android.filament:filament-utils-android", version.ref = "filament" }
+filament-gltfio-android = { module = "com.google.android.filament:gltfio-android", version.ref = "filament" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
