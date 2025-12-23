@@ -132,7 +132,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         
         // Camera setup (LookAt)
         // Position camera at z=5
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 10f, 0f, 0f, 0f, 0f, 2f, 0f)
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 7f, 0f, 0f, 0f, 0f, 2f, 0f)
     }
 
     override fun onDrawFrame(gl: GL10?) {

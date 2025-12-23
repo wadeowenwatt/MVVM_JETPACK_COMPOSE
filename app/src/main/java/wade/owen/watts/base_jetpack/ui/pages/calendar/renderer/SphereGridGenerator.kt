@@ -124,8 +124,7 @@ object SphereGridGenerator {
         // ---------- 1. Generate vertices ----------
 
         // Poles
-        putVertex(0f, radius, 0f, 1f, 1f, 1f, 1f)   // North
-        putVertex(0f, -radius, 0f, 1f, 0f, 0.2f, 1f)  // South (temp, index 1 for now)
+        putVertex(0f, radius, 0f, 1f, 1f, 1f, 1f)   // North -- Index 0
 
         val northIndex = 0
         val southIndex = 19
@@ -177,13 +176,8 @@ object SphereGridGenerator {
             )
         }
 
-        // Move south pole to index 19
-        vertexData.copyInto(
-            vertexData,
-            destinationOffset = 19 * 7,
-            startIndex = 7,
-            endIndex = 14
-        )
+        // South Pole -- Index 19
+        putVertex(0f, -radius, 0f, 1f, 0f, 0.2f, 1f)
 
         // ---------- 2. Generate indices (triangles) ----------
 
@@ -235,5 +229,4 @@ object SphereGridGenerator {
 
         return Pair(vertexData, indices.toIntArray())
     }
-
 }
