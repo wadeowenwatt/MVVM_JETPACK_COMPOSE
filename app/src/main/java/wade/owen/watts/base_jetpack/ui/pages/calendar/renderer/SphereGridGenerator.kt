@@ -181,51 +181,49 @@ object SphereGridGenerator {
 
         // ---------- 2. Generate indices (triangles) ----------
 
+        // ---------- 2. Generate indices (lines) ----------
+
         val upperStart = 1
         val equatorStart = 7
         val lowerStart = 13
 
-        // North cap
-        for (i in 0 until ringCount) {
-            val a = upperStart + i
-            val b = upperStart + (i + 1) % ringCount
-            indices += northIndex
-            indices += a
-            indices += b
-        }
-
-        // Upper ↔ Equator
         for (i in 0 until ringCount) {
             val u0 = upperStart + i
             val u1 = upperStart + (i + 1) % ringCount
             val e0 = equatorStart + i
             val e1 = equatorStart + (i + 1) % ringCount
-
-            indices += u0; indices += e0; indices += u1
-            indices += u1; indices += e0; indices += e1
-        }
-
-        // Equator ↔ Lower
-        for (i in 0 until ringCount) {
-            val e0 = equatorStart + i
-            val e1 = equatorStart + (i + 1) % ringCount
             val l0 = lowerStart + i
             val l1 = lowerStart + (i + 1) % ringCount
 
-            indices += e0; indices += l0; indices += e1
-            indices += e1; indices += l0; indices += l1
+            // 1. North Spoke
+            indices += northIndex; indices += u0
+
+            // 2. Upper Ring
+            indices += u0; indices += u1
+
+            // 3. Upper -> Equator Vertical
+            indices += u0; indices += e0
+
+            // 4. Upper -> Equator Diagonal (Upper[i+1] -> Equator[i])
+            indices += u1; indices += e0
+
+            // 5. Equator Ring
+            indices += e0; indices += e1
+
+            // 6. Equator -> Lower Vertical
+            indices += e0; indices += l0
+
+            // 7. Equator -> Lower Diagonal (Equator[i+1] -> Lower[i])
+            indices += e1; indices += l0
+
+            // 8. Lower Ring
+            indices += l0; indices += l1
+
+            // 9. South Spoke
+            indices += l0; indices += southIndex
         }
 
-        // South cap
-        for (i in 0 until ringCount) {
-            val a = lowerStart + i
-            val b = lowerStart + (i + 1) % ringCount
-            indices += a
-            indices += southIndex
-            indices += b
-        }
-
-        Log.i("Indices: ", indices.toString())
+        Log.i("Indices: ", (indices.size / 2).toString())
 
         return Pair(vertexData, indices.toIntArray())
     }
