@@ -19,7 +19,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
     private var angleY: Float = 0f
 
     // Auto-rotation speed (degrees per frame approx)
-    private val autoRotationSpeed = 0.2f
+    private val autoRotationSpeed = 0f
 
     // Matrices
     private val modelMatrix = FloatArray(16)

@@ -3,6 +3,7 @@ package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer
 import android.util.Log
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 object SphereGridGenerator {
 
@@ -103,7 +104,6 @@ object SphereGridGenerator {
 
         val VERTEX_STRIDE = 7
         val vertexData = FloatArray(20 * VERTEX_STRIDE)
-        val indices = ArrayList<Int>()
 
         var v = 0
 
@@ -137,7 +137,7 @@ object SphereGridGenerator {
         val yLower = -radius * 0.5f
 
         fun ringRadius(y: Float) =
-            kotlin.math.sqrt(radius * radius - y * y)
+            sqrt(radius * radius - y * y)
 
         // Upper ring (no offset)
         val rUpper = ringRadius(yUpper)
@@ -179,51 +179,16 @@ object SphereGridGenerator {
         // South Pole -- Index 19
         putVertex(0f, -radius, 0f, 1f, 0f, 0.2f, 1f)
 
-        // ---------- 2. Generate indices (triangles) ----------
-
         // ---------- 2. Generate indices (lines) ----------
-
-        val upperStart = 1
-        val equatorStart = 7
-        val lowerStart = 13
-
-        for (i in 0 until ringCount) {
-            val u0 = upperStart + i
-            val u1 = upperStart + (i + 1) % ringCount
-            val e0 = equatorStart + i
-            val e1 = equatorStart + (i + 1) % ringCount
-            val l0 = lowerStart + i
-            val l1 = lowerStart + (i + 1) % ringCount
-
-            // 1. North Spoke
-            indices += northIndex; indices += u0
-
-            // 2. Upper Ring
-            indices += u0; indices += u1
-
-            // 3. Upper -> Equator Vertical
-            indices += u0; indices += e0
-
-            // 4. Upper -> Equator Diagonal (Upper[i+1] -> Equator[i])
-            indices += u1; indices += e0
-
-            // 5. Equator Ring
-            indices += e0; indices += e1
-
-            // 6. Equator -> Lower Vertical
-            indices += e0; indices += l0
-
-            // 7. Equator -> Lower Diagonal (Equator[i+1] -> Lower[i])
-            indices += e1; indices += l0
-
-            // 8. Lower Ring
-            indices += l0; indices += l1
-
-            // 9. South Spoke
-            indices += l0; indices += southIndex
-        }
-
-        Log.i("Indices: ", (indices.size / 2).toString())
+        val indices = arrayListOf<Int>(
+            0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6,
+            1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 1,
+            1, 7, 1, 12, 2, 7, 2, 8, 3, 8, 3, 9, 4, 9, 4, 10, 5, 10, 5, 11, 6, 11, 6, 12,
+            7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 7,
+            7, 13, 7, 14, 8, 14, 8, 15, 9, 15, 9, 16, 10, 16, 10, 17, 11, 17, 11, 18, 12, 18, 12, 13,
+            13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 13,
+            19, 13, 19, 14, 19, 15, 19, 16, 19, 17, 19, 18,
+        )
 
         return Pair(vertexData, indices.toIntArray())
     }
