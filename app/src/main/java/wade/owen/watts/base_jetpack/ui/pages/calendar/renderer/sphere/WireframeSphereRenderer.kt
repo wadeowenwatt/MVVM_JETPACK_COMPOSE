@@ -1,10 +1,9 @@
-package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer
+package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere
 
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.SystemClock
-import android.util.Log
 import wade.owen.watts.base_jetpack.ui.pages.calendar.shader.NeonShader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -189,13 +188,13 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         angleY += deltaX
     }
 
-    private var cameraDistance = 7f // Initial distance
+    private var cameraDistance = 50f // Initial distance
 
     fun zoom(zoomFactor: Float) {
         cameraDistance /= zoomFactor
         // Clamp distance to reasonable limits
-        if (cameraDistance < 2f) cameraDistance = 2f
-        if (cameraDistance > 20f) cameraDistance = 20f
+        if (cameraDistance < 7f) cameraDistance = 7f
+        if (cameraDistance > 50f) cameraDistance = 50f
         updateViewMatrix()
     }
 

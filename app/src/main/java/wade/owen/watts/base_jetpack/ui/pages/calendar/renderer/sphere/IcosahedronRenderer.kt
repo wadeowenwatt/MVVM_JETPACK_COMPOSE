@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer
+package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere
 
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView

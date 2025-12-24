@@ -1,31 +1,30 @@
 package wade.owen.watts.base_jetpack.ui.pages.calendar
 
 import android.opengl.GLSurfaceView
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
 import android.view.MotionEvent
-import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.IcosahedronRenderer
+import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere.IcosahedronRenderer
 import android.content.Context
 import android.view.Choreographer
 import android.view.SurfaceView
+import androidx.compose.foundation.layout.Box
 import com.google.android.filament.Skybox
 import com.google.android.filament.utils.ModelViewer
 import java.nio.ByteBuffer
-import java.nio.channels.Channels
 import com.google.android.filament.utils.Utils
 import java.nio.ByteOrder
 import com.google.android.filament.LightManager
 import com.google.android.filament.EntityManager
-import com.google.android.filament.Colors
-import kotlin.math.cos
-import kotlin.math.sin
 
 @Composable
 fun CalendarPage(modifier: Modifier = Modifier) {
-    WireframeSphereView(modifier)
+    Box(modifier) {
+        WireframeSphereView(modifier)
+        TouchPad2DView(modifier)
+    }
 }
 
 @Composable
