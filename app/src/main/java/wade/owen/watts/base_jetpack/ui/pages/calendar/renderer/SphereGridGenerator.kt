@@ -103,7 +103,7 @@ object SphereGridGenerator {
     ): Pair<FloatArray, IntArray> {
 
         val VERTEX_STRIDE = 7
-        val vertexData = FloatArray(20 * VERTEX_STRIDE)
+        val vertexData = FloatArray(21 * VERTEX_STRIDE)
 
         var v = 0
 
@@ -132,9 +132,9 @@ object SphereGridGenerator {
         val ringCount = 6
         val step = (2.0 * Math.PI / ringCount).toFloat()
 
-        val yUpper = radius * 0.5f
+        val yUpper = radius * 0.6f
         val yEquator = 0f
-        val yLower = -radius * 0.5f
+        val yLower = -radius * 0.6f
 
         fun ringRadius(y: Float) =
             sqrt(radius * radius - y * y)
@@ -178,6 +178,8 @@ object SphereGridGenerator {
 
         // South Pole -- Index 19
         putVertex(0f, -radius, 0f, 1f, 0f, 0.2f, 1f)
+        // Random point in the sphere
+        putVertex(0.6f, 1.2f, 0f, 0f, 0f, 0f, 1f)
 
         // ---------- 2. Generate indices (lines) ----------
         val indices = arrayListOf<Int>(
@@ -188,6 +190,7 @@ object SphereGridGenerator {
             7, 13, 7, 14, 8, 14, 8, 15, 9, 15, 9, 16, 10, 16, 10, 17, 11, 17, 11, 18, 12, 18, 12, 13,
             13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 13,
             19, 13, 19, 14, 19, 15, 19, 16, 19, 17, 19, 18,
+            20
         )
 
         return Pair(vertexData, indices.toIntArray())

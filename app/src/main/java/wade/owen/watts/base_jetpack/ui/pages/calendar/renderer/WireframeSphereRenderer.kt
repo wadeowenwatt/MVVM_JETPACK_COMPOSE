@@ -4,6 +4,7 @@ import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.SystemClock
+import android.util.Log
 import wade.owen.watts.base_jetpack.ui.pages.calendar.shader.NeonShader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -19,7 +20,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
     private var angleY: Float = 0f
 
     // Auto-rotation speed (degrees per frame approx)
-    private val autoRotationSpeed = 0f
+    private val autoRotationSpeed = 0.2f
 
     // Matrices
     private val modelMatrix = FloatArray(16)
@@ -32,6 +33,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
     private var mvpMatrixHandle: Int = 0
     private var timeHandle: Int = 0
     private var isPointHandle: Int = 0
+    private var cameraDistanceHandle: Int = 0
 
     private val vao = IntArray(1)
     private val vbo = IntArray(1)
@@ -79,6 +81,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         mvpMatrixHandle = GLES30.glGetUniformLocation(programId, "uMVPMatrix")
         timeHandle = GLES30.glGetUniformLocation(programId, "uTime")
         isPointHandle = GLES30.glGetUniformLocation(programId, "uIsPoint")
+        cameraDistanceHandle = GLES30.glGetUniformLocation(programId, "uCameraDistance")
 
         // 3. Generate Sphere Data
         val (vertices, indices) = SphereGridGenerator.generateCustomSphere(1.0f)
@@ -131,8 +134,8 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         Matrix.perspectiveM(projectionMatrix, 0, 45f, ratio, 0.1f, 100f)
         
         // Camera setup (LookAt)
-        // Position camera at z=5
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 7f, 0f, 0f, 0f, 0f, 2f, 0f)
+        // Position camera at z=cameraDistance
+        updateViewMatrix()
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -143,6 +146,9 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         // Time
         val time = (SystemClock.uptimeMillis() % 10000L) / 1000.0f
         GLES30.glUniform1f(timeHandle, time)
+
+        // Camera Distance
+        GLES30.glUniform1f(cameraDistanceHandle, cameraDistance)
 
         // Auto Rotation
         angleY += autoRotationSpeed
@@ -181,6 +187,20 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
     fun rotate(deltaX: Float, deltaY: Float) {
         angleX += deltaY
         angleY += deltaX
+    }
+
+    private var cameraDistance = 7f // Initial distance
+
+    fun zoom(zoomFactor: Float) {
+        cameraDistance /= zoomFactor
+        // Clamp distance to reasonable limits
+        if (cameraDistance < 2f) cameraDistance = 2f
+        if (cameraDistance > 20f) cameraDistance = 20f
+        updateViewMatrix()
+    }
+
+    private fun updateViewMatrix() {
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, cameraDistance, 0f, 0f, 0f, 0f, 2f, 0f)
     }
 
     private fun loadShader(type: Int, shaderCode: String): Int {

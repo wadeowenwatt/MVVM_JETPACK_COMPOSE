@@ -16,7 +16,8 @@ object NeonShader {
         layout(location = 1) in vec4 aColor;
         
         uniform mat4 uMVPMatrix;
-        uniform float uTime; 
+        uniform float uTime;
+        uniform float uCameraDistance; 
         
         out vec4 vColor;
         out float vBrightness;
@@ -25,13 +26,12 @@ object NeonShader {
             gl_Position = uMVPMatrix * aPosition;
             
             // Depth-based brightness attenuation
-            // Camera is at Z=7, Sphere Radius=1.
-            // Closest point (front) is at Z=1 (distance 6), Farthest (back) is at Z=(-1) (distance 8).
-            // gl_Position.w is approx distance from camera.
-            // Map distance 6.0 -> brightness 1.0
-            // Map distance 8.0 -> brightness 0.1
+            // Dynamic calculation based on camera distance
+            float nearDist = uCameraDistance - 1.0;
+            float farDist = uCameraDistance + 1.1;
+            
             // smoothstep(far_edge, near_edge, value)
-            float brightness = smoothstep(8.1, 6.0, gl_Position.w);
+            float brightness = smoothstep(farDist, nearDist, gl_Position.w);
             
             // Ensure minimum brightness so back vertices aren't totally invisible
             // User requested "even fainter" -> reduced from 0.2 to 0.05

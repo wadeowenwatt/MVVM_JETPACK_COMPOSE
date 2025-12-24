@@ -27,7 +27,7 @@ import wade.owen.watts.base_jetpack.router.Destination
 @Composable
 fun MainPage(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val startDestination = Destination.DIARY
+    val startDestination = Destination.CALENDAR
     var selectedDestination by rememberSaveable {
         mutableIntStateOf(
             startDestination.ordinal
