@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import wade.owen.watts.base_jetpack.R
-import wade.owen.watts.base_jetpack.data.models.enum.AppTheme
+import wade.owen.watts.base_jetpack.data.models.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.LocalMainViewModel
 
 @Composable

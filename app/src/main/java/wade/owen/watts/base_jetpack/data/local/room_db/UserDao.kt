@@ -1,10 +1,10 @@
-package wade.owen.watts.base_jetpack.data.local
+package wade.owen.watts.base_jetpack.data.local.room_db
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import wade.owen.watts.base_jetpack.data.models.UserEntity
+import wade.owen.watts.base_jetpack.data.models.entity.UserEntity
 
 @Dao
 interface UserDao {

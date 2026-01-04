@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.data.models
+package wade.owen.watts.base_jetpack.data.models.entity
 
 import com.squareup.moshi.JsonClass
 

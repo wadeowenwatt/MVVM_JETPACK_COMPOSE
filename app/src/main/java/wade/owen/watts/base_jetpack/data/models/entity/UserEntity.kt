@@ -1,10 +1,10 @@
-package wade.owen.watts.base_jetpack.data.models
+package wade.owen.watts.base_jetpack.data.models.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "user")
 data class UserEntity(
     @PrimaryKey val uid: Int,
     @ColumnInfo(name = "first_name") val firstName: String?,

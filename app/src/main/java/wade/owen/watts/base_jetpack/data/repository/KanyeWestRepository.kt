@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
-import wade.owen.watts.base_jetpack.data.models.QuoteEntity
+import wade.owen.watts.base_jetpack.data.models.entity.QuoteEntity
 import wade.owen.watts.base_jetpack.data.remote.ApiService
 import javax.inject.Inject
 
