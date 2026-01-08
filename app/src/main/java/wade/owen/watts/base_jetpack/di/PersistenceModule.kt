@@ -7,7 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import wade.owen.watts.base_jetpack.data.local.room_db.AppDatabase
-import wade.owen.watts.base_jetpack.data.local.room_db.UserDao
+import wade.owen.watts.base_jetpack.data.local.room_db.DiaryDao
 import javax.annotation.Nonnull
 import javax.inject.Singleton
 
@@ -27,7 +27,7 @@ object PersistenceModule {
 
     @Provides
     @Singleton
-    fun provideUserDao(appDatabase: AppDatabase): UserDao {
-        return appDatabase.userDao()
+    fun provideDiaryDao(appDatabase: AppDatabase): DiaryDao {
+        return appDatabase.diaryDao()
     }
 }

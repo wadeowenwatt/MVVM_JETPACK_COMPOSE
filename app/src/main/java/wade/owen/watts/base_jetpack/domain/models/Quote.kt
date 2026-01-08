@@ -1,8 +1,8 @@
-package wade.owen.watts.base_jetpack.data.models.entity
+package wade.owen.watts.base_jetpack.domain.models
 
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class QuoteEntity(
+data class Quote(
     val quote: String
 )

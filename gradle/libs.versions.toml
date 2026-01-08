@@ -20,10 +20,10 @@ moshiKotlinCodegen = "1.15.2"
 okhttp = "5.1.0"
 retrofit = "3.0.0"
 retrofit2KotlinxSerializationConverter = "1.0.0"
-androidHilt = "2.57.1"
+androidHilt = "2.57.2"
 ksp = "2.2.10-2.0.2"
-sandwich = "2.1.2"
-sandwichRetrofit = "2.1.2"
+sandwich = "2.2.0"
+sandwichRetrofit = "2.2.0"
 roomVersion = "2.8.4"
 
 [libraries]

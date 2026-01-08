@@ -28,12 +28,17 @@ import androidx.compose.ui.unit.dp
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.ui.commons.AppHeader
 
+import androidx.navigation.NavHostController
+import wade.owen.watts.base_jetpack.router.Destination
+
 @Composable
-fun DiaryPage(modifier: Modifier = Modifier) {
+fun DiaryPage(modifier: Modifier = Modifier, navController: NavHostController? = null) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = {
+                    navController?.navigate(Destination.DIARY_DETAIL.route)
+                },
                 shape = CircleShape,
                 contentColor = MaterialTheme.colorScheme.primary,
                 containerColor = MaterialTheme.colorScheme.secondary,
@@ -53,7 +58,9 @@ fun DiaryPage(modifier: Modifier = Modifier) {
             )
             LazyColumn {
                 item {
-
+                    DiaryItem(
+                        Modifier.padding(horizontal = 16.dp)
+                    )
                 }
             }
         }

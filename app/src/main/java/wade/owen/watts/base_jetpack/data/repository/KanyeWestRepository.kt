@@ -4,15 +4,12 @@ import com.skydoves.sandwich.message
 import com.skydoves.sandwich.onError
 import com.skydoves.sandwich.onFailure
 import com.skydoves.sandwich.suspendOnSuccess
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.shareIn
-import wade.owen.watts.base_jetpack.data.models.entity.QuoteEntity
 import wade.owen.watts.base_jetpack.data.remote.ApiService
+import wade.owen.watts.base_jetpack.domain.models.Quote
 import javax.inject.Inject
 
 interface KanyeWestRepository {
@@ -20,7 +17,7 @@ interface KanyeWestRepository {
         onStart: () -> Unit,
         onComplete: () -> Unit,
         onError: (String?) -> Unit,
-    ): Flow<QuoteEntity>
+    ): Flow<Quote>
 }
 
 class KanyeWestRepositoryImpl @Inject constructor(
@@ -30,7 +27,7 @@ class KanyeWestRepositoryImpl @Inject constructor(
         onStart: () -> Unit,
         onComplete: () -> Unit,
         onError: (String?) -> Unit,
-    ): Flow<QuoteEntity> {
+    ): Flow<Quote> {
         return flow {
             val quoteRandom = apiService.getRandomQuote()
             quoteRandom.suspendOnSuccess {
