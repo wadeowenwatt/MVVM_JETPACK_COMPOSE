@@ -12,73 +12,91 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+
 import wade.owen.watts.base_jetpack.router.AppNavHost
 import wade.owen.watts.base_jetpack.router.Destination
 
 @Composable
 fun MainPage(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val startDestination = Destination.DIARY
-    var selectedDestination by rememberSaveable {
-        mutableIntStateOf(
-            startDestination.ordinal
-        )
-    }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val bottomDestinations = listOf(
+        Destination.DIARY,
+        Destination.CALENDAR,
+        Destination.QUOTES,
+        Destination.SETTING
+    )
+    
+    val showBottomBar = bottomDestinations.any { it.route == currentRoute }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(), bottomBar = {
-            NavigationBar(
-                windowInsets = NavigationBarDefaults.windowInsets,
-                containerColor = MaterialTheme.colorScheme.primary,
-            ) {
-                Destination.entries.forEachIndexed { index, destination ->
-                    NavigationBarItem(
-                        selected = selectedDestination == index,
-                        onClick = {
-                            navController.navigate(route = destination.route)
-                            selectedDestination = index
-                        },
-                        icon = {
-                            Image(
-                                painter = painterResource(
-                                    destination.resourceId
-                                ),
-                                contentDescription = destination.contentDescription,
-                                colorFilter = ColorFilter.tint(
-                                    if (selectedDestination == index) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
-                                        alpha = 0.3f
+        modifier = modifier.fillMaxSize(), 
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar(
+                    windowInsets = NavigationBarDefaults.windowInsets,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ) {
+                    bottomDestinations.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentRoute == destination.route,
+                            onClick = {
+                                navController.navigate(route = destination.route) {
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    // on the back stack as users select items
+                                    popUpTo("root_graph") {
+                                        saveState = true
+                                    }
+                                    // Avoid multiple copies of the same destination when
+                                    // reselecting the same item
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously selected item
+                                    restoreState = true
+                                }
+                            },
+                            icon = {
+                                Image(
+                                    painter = painterResource(
+                                        destination.resourceId
+                                    ),
+                                    contentDescription = destination.contentDescription,
+                                    colorFilter = ColorFilter.tint(
+                                        if (currentRoute == destination.route) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
+                                            alpha = 0.3f
+                                        )
                                     )
                                 )
-                            )
-                        },
-                        label = {
-                            Text(
-                                stringResource(destination.resourceLabel)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors()
-                            .copy(
-                                unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
-                                    alpha = 0.3f
-                                ),
-                                selectedIndicatorColor = Color.Transparent,
-                            )
-                    )
+                            },
+                            label = {
+                                Text(
+                                    stringResource(destination.resourceLabel)
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors()
+                                .copy(
+                                    unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
+                                        alpha = 0.3f
+                                    ),
+                                    selectedIndicatorColor = Color.Transparent,
+                                )
+                        )
+                    }
                 }
             }
         }) { innerPadding ->
         AppNavHost(
             navController,
-            startDestination,
+            startDestination = Destination.DIARY,
             modifier = Modifier.padding(innerPadding)
         )
     }
