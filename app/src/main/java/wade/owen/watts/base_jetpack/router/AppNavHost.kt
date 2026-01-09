@@ -40,8 +40,8 @@ fun AppNavHost(
         Destination.entries.forEach { destination ->
                 composable(destination.route) {
                     when (destination) {
-                        Destination.DIARY -> DiaryPage(modifier, rootNavController)
-                        Destination.CALENDAR -> CalendarPage()
+                        Destination.DIARY -> DiaryPage(navController = rootNavController)
+                        Destination.CALENDAR -> CalendarPage(navController = rootNavController)
                         Destination.QUOTES -> QuotePage()
                         Destination.SETTING -> SettingPage()
                     }
