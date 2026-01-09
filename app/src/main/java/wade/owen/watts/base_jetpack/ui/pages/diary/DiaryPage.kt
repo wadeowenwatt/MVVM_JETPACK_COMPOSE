@@ -1,6 +1,5 @@
 package wade.owen.watts.base_jetpack.ui.pages.diary
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,22 +21,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import wade.owen.watts.base_jetpack.R
+import wade.owen.watts.base_jetpack.router.RootDestination
 import wade.owen.watts.base_jetpack.ui.commons.AppHeader
 
-import androidx.navigation.NavHostController
-import wade.owen.watts.base_jetpack.router.Destination
-
 @Composable
-fun DiaryPage(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+fun DiaryPage(
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null
+) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController?.navigate(Destination.DIARY_DETAIL.route)
+                    navController?.navigate(RootDestination.DIARY_DETAIL)
                 },
                 shape = CircleShape,
                 contentColor = MaterialTheme.colorScheme.primary,

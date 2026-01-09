@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import wade.owen.watts.base_jetpack.data.models.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.ProvideMainViewModel
+import wade.owen.watts.base_jetpack.router.RootNavHost
 import wade.owen.watts.base_jetpack.ui.theme.Jetpack_compose_mvvmTheme
 import wade.owen.watts.base_jetpack.utils.LocaleManager
 
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
                 darkTheme = isDarkTheme ?: isSystemInDarkTheme(),
             ) {
                 ProvideMainViewModel(viewModel) {
-                    MainPage(modifier = Modifier)
+                    RootNavHost()
                 }
             }
         }
