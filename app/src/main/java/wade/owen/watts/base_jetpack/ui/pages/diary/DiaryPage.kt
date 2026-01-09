@@ -4,9 +4,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -18,9 +21,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -59,7 +64,7 @@ fun DiaryPage(
             LazyColumn {
                 item {
                     DiaryItem(
-                        Modifier.padding(horizontal = 16.dp)
+                        Modifier.padding(16.dp)
                     )
                 }
             }
@@ -78,27 +83,40 @@ fun DiaryItem(modifier: Modifier = Modifier) {
                 border = BorderStroke(
                     width = 1.dp,
                     color = colorTheme.secondary.copy(alpha = 0.1f)
-                )
+                ),
             )
             .background(colorTheme.primary)
+            .fillMaxSize()
+            .height(145.dp)
     ) {
-        Row {
-            Column {
-                Text("Title")
-                Text("Sub title")
+        Column(
+            modifier = modifier
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text("Title")
+                    Text("Dec 7, 2026")
+                }
+                Row {
+                    ActionButtonDiaryItem(
+                        Modifier.padding(8.dp),
+                        painterResource = painterResource(R.drawable.ic_edit),
+                        contentDescription = "Edit Button"
+                    )
+                    ActionButtonDiaryItem(
+                        Modifier.padding(8.dp),
+                        painterResource = painterResource(R.drawable.ic_recycle_bin),
+                        contentDescription = "Delete Button"
+                    )
+                }
             }
-            Row {
-                ActionButtonDiaryItem(
-                    Modifier.padding(8.dp),
-                    painterResource = painterResource(R.drawable.ic_edit),
-                    contentDescription = "Edit Button"
-                )
-                ActionButtonDiaryItem(
-                    Modifier.padding(8.dp),
-                    painterResource = painterResource(R.drawable.ic_recycle_bin),
-                    contentDescription = "Delete Button"
-                )
-            }
+            Text(
+                "Content jaisdkjkasjdkajskdjaksjdjasdjkajskd kasjdk jkammmmmmxkzckzcmz mxckjjdjjdkkerqwe ádasdascxzczxasdasdaadadsadasdawe",
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
