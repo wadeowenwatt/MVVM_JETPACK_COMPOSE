@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "diary")
 data class DiaryEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo val title: String,
     @ColumnInfo val content: String,
     @ColumnInfo(name = "created_date") val createdDate: Int,

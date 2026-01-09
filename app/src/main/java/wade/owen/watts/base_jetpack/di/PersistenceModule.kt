@@ -22,7 +22,8 @@ object PersistenceModule {
             application,
             klass = AppDatabase::class.java,
             name = "diary_database"
-        ).build()
+        ).fallbackToDestructiveMigration(false)
+            .build()
     }
 
     @Provides

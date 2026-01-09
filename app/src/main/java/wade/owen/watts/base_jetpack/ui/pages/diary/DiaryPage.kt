@@ -20,24 +20,38 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import wade.owen.watts.base_jetpack.R
+import wade.owen.watts.base_jetpack.domain.models.Diary
 import wade.owen.watts.base_jetpack.router.RootDestination
 import wade.owen.watts.base_jetpack.ui.commons.AppHeader
+import wade.owen.watts.base_jetpack.utils.DateTimeFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun DiaryPage(
     modifier: Modifier = Modifier,
     navController: NavHostController? = null
 ) {
+    val viewModel = hiltViewModel<DiaryViewModel>()
+    val uiState = viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDiaryData()
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -61,10 +75,13 @@ fun DiaryPage(
             AppHeader(
                 Modifier.padding(innerPadding)
             )
-            LazyColumn {
-                item {
+            LazyColumn() {
+                items(uiState.value.diaries.size) { index ->
+                    val diary = uiState.value.diaries[index]
+
                     DiaryItem(
-                        Modifier.padding(16.dp)
+                        Modifier.padding(16.dp),
+                        diary = diary
                     )
                 }
             }
@@ -74,7 +91,7 @@ fun DiaryPage(
 }
 
 @Composable
-fun DiaryItem(modifier: Modifier = Modifier) {
+fun DiaryItem(modifier: Modifier = Modifier, diary: Diary) {
     val colorTheme = MaterialTheme.colorScheme
 
     Box(
@@ -87,7 +104,7 @@ fun DiaryItem(modifier: Modifier = Modifier) {
             )
             .background(colorTheme.primary)
             .fillMaxSize()
-            .height(145.dp)
+            .height(140.dp)
     ) {
         Column(
             modifier = modifier
@@ -97,8 +114,13 @@ fun DiaryItem(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text("Title")
-                    Text("Dec 7, 2026")
+                    Text(diary.title)
+                    Text(
+                        SimpleDateFormat(
+                            DateTimeFormat.PATTERN_MONTH_DATE_YEAR,
+                            Locale.getDefault()
+                        ).format(diary.createdDate)
+                    )
                 }
                 Row {
                     ActionButtonDiaryItem(
@@ -114,7 +136,7 @@ fun DiaryItem(modifier: Modifier = Modifier) {
                 }
             }
             Text(
-                "Content jaisdkjkasjdkajskdjaksjdjasdjkajskd kasjdk jkammmmmmxkzckzcmz mxckjjdjjdkkerqwe ádasdascxzczxasdasdaadadsadasdawe",
+                diary.content,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -139,7 +161,17 @@ fun ActionButtonDiaryItem(
 @Preview(showBackground = true)
 @Composable
 fun DiaryItemPreview(modifier: Modifier = Modifier) {
-    DiaryItem()
+    DiaryItem(
+        modifier = modifier,
+        diary =
+            Diary(
+                id = 1,
+                title = "Title",
+                content = "Content",
+                createdDate = Date(),
+                updatedDate = Date(),
+            )
+    )
 }
 
 @Preview(showBackground = true)

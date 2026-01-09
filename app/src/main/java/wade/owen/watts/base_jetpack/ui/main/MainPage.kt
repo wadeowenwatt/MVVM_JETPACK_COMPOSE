@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.navigation.NavHostController
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
@@ -18,11 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-
-import wade.owen.watts.base_jetpack.router.MainNavHost
 import wade.owen.watts.base_jetpack.router.Destination
+import wade.owen.watts.base_jetpack.router.MainNavHost
 
 @Composable
 fun MainPage(
@@ -34,7 +33,8 @@ fun MainPage(
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize(),
         bottomBar = {
             NavigationBar(
                 windowInsets = NavigationBarDefaults.windowInsets,

@@ -34,7 +34,6 @@ class DiaryDetailViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val currentState = _uiState.value
             val newDiary = Diary(
-                id = 0, // Auto-generate
                 title = currentState.title,
                 content = currentState.content,
                 createdDate = Date(),
@@ -44,7 +43,7 @@ class DiaryDetailViewModel @Inject constructor(
         }
     }
 
+    // TODO: To be implemented for edit mode
     fun updateDiary() {
-        // To be implemented for edit mode
     }
 }
