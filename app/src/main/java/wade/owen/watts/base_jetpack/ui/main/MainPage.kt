@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
-import wade.owen.watts.base_jetpack.router.AppNavHost
+import wade.owen.watts.base_jetpack.router.MainNavHost
 import wade.owen.watts.base_jetpack.router.Destination
 
 @Composable
@@ -87,7 +87,7 @@ fun MainPage(
                 }
             }
         }) { innerPadding ->
-        AppNavHost(
+        MainNavHost(
             navController,
             rootNavController,
             startDestination = Destination.DIARY,

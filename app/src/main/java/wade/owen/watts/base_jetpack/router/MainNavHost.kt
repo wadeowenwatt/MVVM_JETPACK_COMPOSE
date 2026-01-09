@@ -25,8 +25,9 @@ enum class Destination(
     SETTING("setting", R.string.bottom_nav_setting, R.drawable.ic_setting, "Setting")
 }
 
+// Main Nav Host: Using for navigating to pages in bottom navigation bar
 @Composable
-fun AppNavHost(
+fun MainNavHost(
     navController: NavHostController,
     rootNavController: NavHostController,
     startDestination: Destination,
