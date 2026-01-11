@@ -17,16 +17,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import wade.owen.watts.base_jetpack.router.Destination
-import wade.owen.watts.base_jetpack.router.MainNavHost
+import wade.owen.watts.base_jetpack.router.BottomNavDestination
+import wade.owen.watts.base_jetpack.router.RootDestination
+import wade.owen.watts.base_jetpack.router.RootNavHost
+import wade.owen.watts.base_jetpack.router.shouldShowBottomNavBar
 
 @Composable
 fun MainPage(
     modifier: Modifier = Modifier,
-    rootNavController: NavHostController
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -36,61 +36,55 @@ fun MainPage(
         modifier = modifier
             .fillMaxSize(),
         bottomBar = {
-            NavigationBar(
-                windowInsets = NavigationBarDefaults.windowInsets,
-                containerColor = MaterialTheme.colorScheme.primary,
-            ) {
-                Destination.entries.forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentRoute == destination.route,
-                        onClick = {
-                            navController.navigate(route = destination.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo("root_graph") {
-                                    saveState = true
+            if (shouldShowBottomNavBar(currentRoute)) {
+                NavigationBar(
+                    windowInsets = NavigationBarDefaults.windowInsets,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ) {
+                    BottomNavDestination.entries.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentRoute == destination.route,
+                            onClick = {
+                                navController.navigate(route = destination.route) {
+                                    popUpTo(RootDestination.BOTTOM_NAV) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                // Avoid multiple copies of the same destination when
-                                // re-selecting the same item
-                                launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Image(
-                                painter = painterResource(
-                                    destination.resourceId
-                                ),
-                                contentDescription = destination.contentDescription,
-                                colorFilter = ColorFilter.tint(
-                                    if (currentRoute == destination.route) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
-                                        alpha = 0.3f
+                            },
+                            icon = {
+                                Image(
+                                    painter = painterResource(
+                                        destination.resourceId
+                                    ),
+                                    contentDescription = destination.contentDescription,
+                                    colorFilter = ColorFilter.tint(
+                                        if (currentRoute == destination.route) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary.copy(
+                                            alpha = 0.3f
+                                        )
                                     )
                                 )
-                            )
-                        },
-                        label = {
-                            Text(
-                                stringResource(destination.resourceLabel)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors()
-                            .copy(
-                                unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
-                                    alpha = 0.3f
-                                ),
-                                selectedIndicatorColor = Color.Transparent,
-                            )
-                    )
+                            },
+                            label = {
+                                Text(
+                                    stringResource(destination.resourceLabel)
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors()
+                                .copy(
+                                    unselectedTextColor = MaterialTheme.colorScheme.secondary.copy(
+                                        alpha = 0.3f
+                                    ),
+                                    selectedIndicatorColor = Color.Transparent,
+                                )
+                        )
+                    }
                 }
             }
         }) { innerPadding ->
-        MainNavHost(
-            navController,
-            rootNavController,
-            startDestination = Destination.DIARY,
+        RootNavHost(
+            navController = navController,
             modifier = Modifier.padding(innerPadding)
         )
     }

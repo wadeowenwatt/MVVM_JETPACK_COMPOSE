@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,16 +20,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun QuotePage(modifier: Modifier = Modifier) {
-    val viewModel = hiltViewModel<QuoteViewModel>()
+fun QuotePage(
+    modifier: Modifier = Modifier,
+    viewModel: QuoteViewModel = hiltViewModel<QuoteViewModel>()
+) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchRandomQuote()
-    }
-
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         contentAlignment = Alignment.Center,
@@ -60,6 +57,5 @@ fun QuotePage(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun HomePagePreview(modifier: Modifier = Modifier) {
-
-    QuotePage()
+    QuotePage(modifier)
 }

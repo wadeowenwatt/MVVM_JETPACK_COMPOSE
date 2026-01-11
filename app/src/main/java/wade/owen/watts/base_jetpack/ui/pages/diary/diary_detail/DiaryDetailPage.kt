@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryDetailPage(
+    modifier: Modifier = Modifier,
     navController: NavHostController?,
     viewModel: DiaryDetailViewModel = hiltViewModel()
 ) {

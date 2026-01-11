@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -31,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.domain.models.Diary
 import wade.owen.watts.base_jetpack.router.RootDestination
@@ -42,21 +42,16 @@ import java.util.Locale
 
 @Composable
 fun DiaryPage(
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null
+    navController: NavHostController,
+    viewModel: DiaryViewModel = hiltViewModel<DiaryViewModel>()
 ) {
-    val viewModel = hiltViewModel<DiaryViewModel>()
     val uiState = viewModel.uiState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadDiaryData()
-    }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController?.navigate(RootDestination.DIARY_DETAIL)
+                    navController.navigate(RootDestination.DIARY_DETAIL)
                 },
                 shape = CircleShape,
                 contentColor = MaterialTheme.colorScheme.primary,
@@ -177,5 +172,5 @@ fun DiaryItemPreview(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun DiaryPagePreview() {
-    DiaryPage()
+    DiaryPage(navController = rememberNavController())
 }

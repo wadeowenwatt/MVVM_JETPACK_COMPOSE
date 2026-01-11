@@ -17,6 +17,10 @@ class QuoteViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(QuoteUiState())
     val uiState: StateFlow<QuoteUiState> get() = _uiState.asStateFlow()
 
+    init {
+        fetchRandomQuote()
+    }
+
     fun fetchRandomQuote() {
         viewModelScope.launch {
             kanyeWestRepository.getRandomQuote(

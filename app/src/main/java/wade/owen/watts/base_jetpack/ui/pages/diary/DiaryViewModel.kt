@@ -1,5 +1,6 @@
 package wade.owen.watts.base_jetpack.ui.pages.diary
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,18 +22,22 @@ class DiaryViewModel @Inject constructor(
     )
     val uiState: StateFlow<DiaryUiState> get() = _uiState.asStateFlow()
 
+    init {
+        loadDiaryData()
+    }
+
     fun loadDiaryData() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value =
                 _uiState.value.copy(loadStatus = LoadStatus.LOADING)
             try {
-                // Fetching all diaries with arbitrary limit/offset for now as per requirement just 'loadDiary'
-                val result = diaryRepository.getDiaries(100, 0)
+                val result = diaryRepository.getDiaries(20, 0)
                 _uiState.value = _uiState.value.copy(
                     loadStatus = LoadStatus.SUCCESS,
                     diaries = result
                 )
             } catch (e: Exception) {
+                Log.e("DiaryViewModel", "Error loading diary data", e)
                 _uiState.value =
                     _uiState.value.copy(loadStatus = LoadStatus.FAILURE)
             }
