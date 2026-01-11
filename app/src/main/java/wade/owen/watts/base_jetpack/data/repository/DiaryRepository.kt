@@ -1,5 +1,7 @@
 package wade.owen.watts.base_jetpack.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import wade.owen.watts.base_jetpack.data.local.room_db.DiaryDao
 import wade.owen.watts.base_jetpack.data.mapper.toDomain
 import wade.owen.watts.base_jetpack.data.mapper.toEntity
@@ -7,9 +9,9 @@ import wade.owen.watts.base_jetpack.domain.models.Diary
 import java.util.Date
 
 interface DiaryRepository {
-    suspend fun getDiaries(limit: Int, offset: Int): List<Diary>
+    fun getDiaries(limit: Int, offset: Int): Flow<List<Diary>>
 
-    suspend fun getDiaryByDate(createdDate: Date): Diary
+    fun getDiaryByDate(createdDate: Date): Flow<Diary>
 
     suspend fun insertDiary(diary: Diary)
 
@@ -20,16 +22,21 @@ class DiaryRepositoryImpl(
     private val diaryDao: DiaryDao
 ) : DiaryRepository {
 
-    override suspend fun getDiaries(
-        limit: Int,
-        offset: Int
-    ): List<Diary> {
-        return diaryDao.getDiaries(limit, offset).map { it.toDomain() }
+    override fun getDiaries(
+        limit: Int, offset: Int
+    ): Flow<List<Diary>> {
+        return diaryDao.getDiaries(limit, offset).map { entities ->
+            entities.map {
+                it.toDomain()
+            }
+        }
     }
 
-    override suspend fun getDiaryByDate(createdDate: Date): Diary {
+    override fun getDiaryByDate(createdDate: Date): Flow<Diary> {
         val timestamp = (createdDate.time / 1000).toInt()
-        return diaryDao.getDiaryByDate(timestamp).toDomain()
+        return diaryDao.getDiaryByDate(timestamp).map {
+            it.toDomain()
+        }
     }
 
     override suspend fun insertDiary(diary: Diary) {

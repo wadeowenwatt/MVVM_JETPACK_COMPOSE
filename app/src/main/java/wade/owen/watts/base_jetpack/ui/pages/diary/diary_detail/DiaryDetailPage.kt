@@ -21,7 +21,7 @@ import androidx.navigation.NavHostController
 @Composable
 fun DiaryDetailPage(
     modifier: Modifier = Modifier,
-    navController: NavHostController?,
+    navController: NavHostController,
     viewModel: DiaryDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -31,14 +31,13 @@ fun DiaryDetailPage(
             CenterAlignedTopAppBar(
                 title = { Text("Edit Entry") },
                 navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.createNewDiary()
-                        navController?.popBackStack()
+                        viewModel.createNewDiary(navController)
                     }) {
                         Icon(Icons.Default.Check, contentDescription = "Save")
                     }
@@ -47,7 +46,7 @@ fun DiaryDetailPage(
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)

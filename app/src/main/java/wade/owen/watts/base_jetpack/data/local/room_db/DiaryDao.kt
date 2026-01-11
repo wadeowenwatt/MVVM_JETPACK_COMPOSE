@@ -4,16 +4,17 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import wade.owen.watts.base_jetpack.data.models.entity.DiaryEntity
 
 @Dao
 interface DiaryDao {
 
     @Query("SELECT * FROM diary ORDER BY created_date DESC LIMIT :limit OFFSET :offset")
-    fun getDiaries(limit: Int, offset: Int): List<DiaryEntity>
+    fun getDiaries(limit: Int, offset: Int): Flow<List<DiaryEntity>>
 
     @Query("SELECT * FROM diary WHERE created_date = :createdDate")
-    fun getDiaryByDate(createdDate: Int): DiaryEntity
+    fun getDiaryByDate(createdDate: Int): Flow<DiaryEntity>
 
     @Insert
     fun insertDiary(diary: DiaryEntity)

@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.data.models.enums
+package wade.owen.watts.base_jetpack.domain.models.enums
 
 enum class LoadStatus {
     INITIAL,

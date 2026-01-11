@@ -8,8 +8,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import wade.owen.watts.base_jetpack.data.models.enums.LoadStatus
+import wade.owen.watts.base_jetpack.domain.models.enums.LoadStatus
 import wade.owen.watts.base_jetpack.data.repository.DiaryRepository
 import javax.inject.Inject
 
@@ -23,23 +24,23 @@ class DiaryViewModel @Inject constructor(
     val uiState: StateFlow<DiaryUiState> get() = _uiState.asStateFlow()
 
     init {
-        loadDiaryData()
+        observeListDiary()
     }
 
-    fun loadDiaryData() {
+    private fun observeListDiary() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value =
                 _uiState.value.copy(loadStatus = LoadStatus.LOADING)
-            try {
-                val result = diaryRepository.getDiaries(20, 0)
-                _uiState.value = _uiState.value.copy(
-                    loadStatus = LoadStatus.SUCCESS,
-                    diaries = result
-                )
-            } catch (e: Exception) {
-                Log.e("DiaryViewModel", "Error loading diary data", e)
+
+            diaryRepository.getDiaries(20, 0).catch {
+                Log.e("DiaryViewModel", "Error loading diary data", it)
                 _uiState.value =
                     _uiState.value.copy(loadStatus = LoadStatus.FAILURE)
+            }.collect { diaries ->
+                _uiState.value = _uiState.value.copy(
+                    loadStatus = LoadStatus.SUCCESS,
+                    diaries = diaries
+                )
             }
         }
     }
