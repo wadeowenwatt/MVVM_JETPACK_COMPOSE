@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val uiState by viewModel.uiState.collectAsState()
+            val uiState by viewModel.state.collectAsState()
             val isDarkTheme: Boolean? = when (uiState.theme) {
                 AppTheme.DARK -> true
                 AppTheme.LIGHT -> false

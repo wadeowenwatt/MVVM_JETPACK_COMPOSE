@@ -45,7 +45,7 @@ fun DiaryPage(
     navController: NavHostController,
     viewModel: DiaryViewModel = hiltViewModel<DiaryViewModel>()
 ) {
-    val uiState = viewModel.uiState.collectAsState()
+    val uiState = viewModel.state.collectAsState()
 
     Scaffold(
         floatingActionButton = {

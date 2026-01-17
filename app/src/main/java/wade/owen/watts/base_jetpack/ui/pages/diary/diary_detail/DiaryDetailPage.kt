@@ -7,8 +7,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +34,21 @@ fun DiaryDetailPage(
     navController: NavHostController,
     viewModel: DiaryDetailViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is DiaryDetailEvent.NavigateBack -> {
+                    navController.popBackStack()
+                }
+
+                is DiaryDetailEvent.DiaryDetailError -> {
+                    // TODO: Show dialog
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -37,7 +61,7 @@ fun DiaryDetailPage(
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.createNewDiary(navController)
+                        viewModel.createNewDiary()
                     }) {
                         Icon(Icons.Default.Check, contentDescription = "Save")
                     }
