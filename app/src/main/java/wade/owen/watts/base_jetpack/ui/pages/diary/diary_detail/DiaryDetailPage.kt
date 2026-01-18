@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,15 +54,15 @@ fun DiaryDetailPage(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Edit Entry") },
+                title = { Text(if (uiState.diaryId != null) "Edit Entry" else "New Entry") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { viewModel.checkChangesAndDismiss() }) {
                         Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.createNewDiary()
+                        viewModel.saveDiary()
                     }) {
                         Icon(Icons.Default.Check, contentDescription = "Save")
                     }
@@ -104,5 +105,20 @@ fun DiaryDetailPage(
                 )
             )
         }
+    }
+
+    if (uiState.showDiscardDialog) {
+        AppAlertDialog(
+            title = "Unsaved Changes",
+            content = "Do you want to discard changes?",
+            onConfirm = {
+                viewModel.confirmDiscard()
+            },
+            onDismissRequest = {
+                viewModel.dismissDiscardDialog()
+            },
+            titleButtonConfirm = "Discard",
+            titleButtonDismiss = "Keep Editing"
+        )
     }
 }

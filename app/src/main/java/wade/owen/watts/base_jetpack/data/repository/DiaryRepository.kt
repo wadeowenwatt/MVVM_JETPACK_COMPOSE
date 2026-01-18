@@ -13,7 +13,11 @@ interface DiaryRepository {
 
     fun getDiaryByDate(createdDate: Date): Flow<Diary>
 
+    fun getDiaryById(id: Int): Flow<Diary>
+
     suspend fun insertDiary(diary: Diary)
+
+    suspend fun updateDiary(diary: Diary)
 
     suspend fun deleteDiary(diary: Diary)
 }
@@ -38,9 +42,17 @@ class DiaryRepositoryImpl(
             it.toDomain()
         }
     }
+    
+    override fun getDiaryById(id: Int): Flow<Diary> {
+        return diaryDao.getDiaryById(id).map { it.toDomain() }
+    }
 
     override suspend fun insertDiary(diary: Diary) {
         diaryDao.insertDiary(diary.toEntity())
+    }
+
+    override suspend fun updateDiary(diary: Diary) {
+         diaryDao.updateDiary(diary.toEntity())
     }
 
     override suspend fun deleteDiary(diary: Diary) {

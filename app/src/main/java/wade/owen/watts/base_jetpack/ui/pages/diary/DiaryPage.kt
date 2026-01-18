@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,9 @@ fun DiaryPage(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(RootDestination.DIARY_DETAIL)
+                    navController.navigate(
+                        RootDestination.createDiaryDetailRoute()
+                    )
                 },
                 shape = CircleShape,
                 contentColor = MaterialTheme.colorScheme.primary,
@@ -85,10 +88,13 @@ fun DiaryPage(
                         Modifier.padding(16.dp),
                         diary = diary,
                         onEditClick = {
-
+                            navController.navigate(
+                                RootDestination.createDiaryDetailRoute(
+                                    diary.id
+                                )
+                            )
                         },
                         onDeleteClick = {
-                            // Show dialog confirm delete
                             viewModel.showDeleteDialog(diary)
                         },
                     )
@@ -99,14 +105,16 @@ fun DiaryPage(
 
     if (uiState.value.diaryPendingToDelete != null) {
         AppAlertDialog(
-            title = "Delete Diary",
-            content = "Are you sure you want to delete this diary?",
+            title = stringResource(R.string.dialog_title_delete_diary_alert),
+            content = stringResource(R.string.dialog_message_delete_diary_alert),
             onConfirm = {
                 viewModel.deleteDiary()
             },
             onDismissRequest = {
                 viewModel.dismissDeleteDialog()
-            }
+            },
+            titleButtonDismiss = stringResource(R.string.label_cancel),
+            titleButtonConfirm = stringResource(R.string.label_ok),
         )
     }
 

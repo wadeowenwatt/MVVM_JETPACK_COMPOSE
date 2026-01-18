@@ -5,4 +5,8 @@
     <string name="bottom_nav_calendar">Calendar</string>
     <string name="bottom_nav_quotes">Quotes</string>
     <string name="bottom_nav_setting">Setting</string>
+    <string name="dialog_title_delete_diary_alert">Delete Diary</string>
+    <string name="dialog_message_delete_diary_alert">Are you sure you want to delete this diary?</string>
+    <string name="label_cancel">Cancel</string>
+    <string name="label_ok">OK</string>
 </resources>

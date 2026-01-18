@@ -12,19 +12,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.router.RootDestination
 import wade.owen.watts.base_jetpack.ui.commons.AppHeader
 
 @Composable
-fun CalendarPage(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+fun CalendarPage(
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null
+) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController?.navigate(RootDestination.DIARY_DETAIL)
+                    navController?.navigate(
+                        RootDestination.createDiaryDetailRoute()
+                    )
                 },
                 shape = CircleShape,
                 contentColor = MaterialTheme.colorScheme.primary,

@@ -30,7 +30,9 @@ fun AppAlertDialog(
     title: String,
     content: String,
     onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    titleButtonDismiss: String = "Cancel",
+    titleButtonConfirm: String = "OK",
 ) {
     Dialog(
         onDismissRequest = onDismissRequest
@@ -64,12 +66,12 @@ fun AppAlertDialog(
             ) {
                 AppOutlinedButton(
                     modifier = Modifier.weight(1f),
-                    text = "Cancel",
+                    text = titleButtonDismiss,
                     onClick = onDismissRequest
                 )
                 AppFilledButton(
                     modifier = Modifier.weight(1f),
-                    text = "Delete",
+                    text = titleButtonConfirm,
                     onClick = onConfirm
                 )
             }

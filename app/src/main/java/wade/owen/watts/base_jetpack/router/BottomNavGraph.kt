@@ -10,7 +10,6 @@ import wade.owen.watts.base_jetpack.ui.pages.calendar.CalendarPage
 import wade.owen.watts.base_jetpack.ui.pages.diary.DiaryPage
 import wade.owen.watts.base_jetpack.ui.pages.quote_page.QuotePage
 import wade.owen.watts.base_jetpack.ui.pages.setting.SettingPage
-import java.lang.reflect.Modifier
 
 @Immutable
 enum class BottomNavDestination(
