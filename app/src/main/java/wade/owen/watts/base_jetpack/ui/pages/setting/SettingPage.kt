@@ -17,6 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import wade.owen.watts.base_jetpack.R
+import wade.owen.watts.base_jetpack.core.designsystem.AppFilledButton
+import wade.owen.watts.base_jetpack.core.designsystem.AppOutlinedButton
 import wade.owen.watts.base_jetpack.data.models.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.LocalMainViewModel
 
@@ -28,18 +30,20 @@ fun SettingPage(
     val viewModel = hiltViewModel<SettingViewModel>()
     val mainVM = LocalMainViewModel.current
 
-    Scaffold() { innerPadding ->
+    Scaffold { innerPadding ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .padding(innerPadding)
                 .padding(24.dp)
         ) {
-            Button(onClick = { viewModel.changeLanguage(context, "vi") }) {
-                Text(text = "Vietnamese", color = Color.Black)
-            }
-            Button(onClick = { viewModel.changeLanguage(context, "en") }) {
-                Text(text = "English", color = Color.Black)
-            }
+            AppFilledButton(
+                text = "Vietnamese",
+                onClick = { viewModel.changeLanguage(context, "vi") }
+            )
+            AppOutlinedButton(
+                text = "English",
+                onClick = { viewModel.changeLanguage(context, "en") }
+            )
 
             // Text test multi language change
             Text(stringResource(R.string.list_diary_title))

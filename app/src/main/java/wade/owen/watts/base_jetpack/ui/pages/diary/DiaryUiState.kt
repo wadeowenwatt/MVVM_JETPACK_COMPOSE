@@ -8,5 +8,6 @@ import wade.owen.watts.base_jetpack.domain.models.Diary
 
 data class DiaryUiState(
     val loadStatus: LoadStatus = LoadStatus.INITIAL,
-    val diaries: List<Diary> = emptyList()
+    val diaries: List<Diary> = emptyList(),
+    val diaryPendingToDelete: Diary? = null,
 ): UiState

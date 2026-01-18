@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -32,12 +34,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import wade.owen.watts.base_jetpack.R
+import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
+import wade.owen.watts.base_jetpack.core.designsystem.AppIconButton
 import wade.owen.watts.base_jetpack.domain.models.Diary
 import wade.owen.watts.base_jetpack.router.RootDestination
 import wade.owen.watts.base_jetpack.ui.commons.AppHeader
 import wade.owen.watts.base_jetpack.utils.DateTimeFormat
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -46,6 +49,10 @@ fun DiaryPage(
     viewModel: DiaryViewModel = hiltViewModel<DiaryViewModel>()
 ) {
     val uiState = viewModel.state.collectAsState()
+
+    LaunchedEffect(Unit) {
+
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -76,17 +83,42 @@ fun DiaryPage(
 
                     DiaryItem(
                         Modifier.padding(16.dp),
-                        diary = diary
+                        diary = diary,
+                        onEditClick = {
+
+                        },
+                        onDeleteClick = {
+                            // Show dialog confirm delete
+                            viewModel.showDeleteDialog(diary)
+                        },
                     )
                 }
             }
         }
-
     }
+
+    if (uiState.value.diaryPendingToDelete != null) {
+        AppAlertDialog(
+            title = "Delete Diary",
+            content = "Are you sure you want to delete this diary?",
+            onConfirm = {
+                viewModel.deleteDiary()
+            },
+            onDismissRequest = {
+                viewModel.dismissDeleteDialog()
+            }
+        )
+    }
+
 }
 
 @Composable
-fun DiaryItem(modifier: Modifier = Modifier, diary: Diary) {
+fun DiaryItem(
+    modifier: Modifier = Modifier,
+    diary: Diary,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
     val colorTheme = MaterialTheme.colorScheme
 
     Box(
@@ -97,7 +129,9 @@ fun DiaryItem(modifier: Modifier = Modifier, diary: Diary) {
                     color = colorTheme.secondary.copy(alpha = 0.1f)
                 ),
             )
-            .background(colorTheme.primary)
+            .background(
+                colorTheme.primary, shape = RoundedCornerShape(16.dp)
+            )
             .fillMaxSize()
             .height(140.dp)
     ) {
@@ -121,12 +155,14 @@ fun DiaryItem(modifier: Modifier = Modifier, diary: Diary) {
                     ActionButtonDiaryItem(
                         Modifier.padding(8.dp),
                         painterResource = painterResource(R.drawable.ic_edit),
-                        contentDescription = "Edit Button"
+                        contentDescription = "Edit Button",
+                        onClick = onEditClick
                     )
                     ActionButtonDiaryItem(
                         Modifier.padding(8.dp),
                         painterResource = painterResource(R.drawable.ic_recycle_bin),
-                        contentDescription = "Delete Button"
+                        contentDescription = "Delete Button",
+                        onClick = onDeleteClick
                     )
                 }
             }
@@ -143,29 +179,15 @@ fun ActionButtonDiaryItem(
     modifier: Modifier = Modifier,
     painterResource: Painter,
     contentDescription: String,
+    onClick: () -> Unit,
 ) {
-    Image(
-        painterResource,
+    AppIconButton(
         modifier = modifier
             .width(16.dp)
             .height(16.dp),
-        contentDescription = contentDescription
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DiaryItemPreview(modifier: Modifier = Modifier) {
-    DiaryItem(
-        modifier = modifier,
-        diary =
-            Diary(
-                id = 1,
-                title = "Title",
-                content = "Content",
-                createdDate = Date(),
-                updatedDate = Date(),
-            )
+        painterResource = painterResource,
+        contentDescription = contentDescription,
+        onClick = onClick
     )
 }
 
