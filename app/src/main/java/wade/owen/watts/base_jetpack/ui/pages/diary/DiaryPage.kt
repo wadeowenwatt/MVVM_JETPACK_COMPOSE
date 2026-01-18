@@ -159,15 +159,15 @@ fun DiaryItem(
                         ).format(diary.createdDate)
                     )
                 }
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     ActionButtonDiaryItem(
-                        Modifier.padding(8.dp),
                         painterResource = painterResource(R.drawable.ic_edit),
                         contentDescription = "Edit Button",
                         onClick = onEditClick
                     )
                     ActionButtonDiaryItem(
-                        Modifier.padding(8.dp),
                         painterResource = painterResource(R.drawable.ic_recycle_bin),
                         contentDescription = "Delete Button",
                         onClick = onDeleteClick
@@ -191,8 +191,8 @@ fun ActionButtonDiaryItem(
 ) {
     AppIconButton(
         modifier = modifier
-            .width(16.dp)
-            .height(16.dp),
+            .width(32.dp)
+            .height(32.dp),
         painterResource = painterResource,
         contentDescription = contentDescription,
         onClick = onClick
