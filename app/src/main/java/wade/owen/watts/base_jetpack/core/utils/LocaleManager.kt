@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.utils
+package wade.owen.watts.base_jetpack.core.utils
 
 import android.content.Context
 import android.content.res.Configuration

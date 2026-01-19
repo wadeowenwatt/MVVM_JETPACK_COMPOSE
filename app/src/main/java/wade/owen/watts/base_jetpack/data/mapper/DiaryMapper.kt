@@ -1,7 +1,7 @@
 package wade.owen.watts.base_jetpack.data.mapper
 
 import wade.owen.watts.base_jetpack.data.models.entity.DiaryEntity
-import wade.owen.watts.base_jetpack.domain.models.Diary
+import wade.owen.watts.base_jetpack.domain.entities.Diary
 import java.util.Date
 
 fun DiaryEntity.toDomain(): Diary {

@@ -7,12 +7,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import wade.owen.watts.base_jetpack.data.repository.KanyeWestRepository
+import wade.owen.watts.base_jetpack.domain.repository.RandomQuoteRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class QuoteViewModel @Inject constructor(
-    private val kanyeWestRepository: KanyeWestRepository
+    private val randomQuoteRepository: RandomQuoteRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(QuoteUiState())
     val uiState: StateFlow<QuoteUiState> get() = _uiState.asStateFlow()
@@ -23,7 +23,7 @@ class QuoteViewModel @Inject constructor(
 
     fun fetchRandomQuote() {
         viewModelScope.launch {
-            kanyeWestRepository.getRandomQuote(
+            randomQuoteRepository.getRandomQuote(
                 onStart = {
                     _uiState.value = _uiState.value.copy(
                         isLoading = true,

@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import wade.owen.watts.base_jetpack.utils.LocaleManager
+import wade.owen.watts.base_jetpack.core.utils.LocaleManager
 import javax.inject.Inject
 
 @HiltViewModel

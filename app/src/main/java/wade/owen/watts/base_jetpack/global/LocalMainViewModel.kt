@@ -12,7 +12,7 @@ val LocalMainViewModel = staticCompositionLocalOf<MainViewModel> {
 @Composable
 fun ProvideMainViewModel(
     mainViewModel: MainViewModel,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalMainViewModel provides mainViewModel) {
         content()

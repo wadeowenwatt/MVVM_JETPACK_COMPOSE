@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.networks
+package wade.owen.watts.base_jetpack.core.networks
 
 import okhttp3.Interceptor
 import okhttp3.Response

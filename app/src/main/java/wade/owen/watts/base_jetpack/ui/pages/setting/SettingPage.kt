@@ -19,7 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.core.designsystem.AppFilledButton
 import wade.owen.watts.base_jetpack.core.designsystem.AppOutlinedButton
-import wade.owen.watts.base_jetpack.data.models.enums.AppTheme
+import wade.owen.watts.base_jetpack.domain.entities.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.LocalMainViewModel
 
 @Composable

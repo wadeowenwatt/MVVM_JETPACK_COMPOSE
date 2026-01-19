@@ -5,22 +5,9 @@ import kotlinx.coroutines.flow.map
 import wade.owen.watts.base_jetpack.data.local.room_db.DiaryDao
 import wade.owen.watts.base_jetpack.data.mapper.toDomain
 import wade.owen.watts.base_jetpack.data.mapper.toEntity
-import wade.owen.watts.base_jetpack.domain.models.Diary
+import wade.owen.watts.base_jetpack.domain.entities.Diary
+import wade.owen.watts.base_jetpack.domain.repository.DiaryRepository
 import java.util.Date
-
-interface DiaryRepository {
-    fun getDiaries(limit: Int, offset: Int): Flow<List<Diary>>
-
-    fun getDiaryByDate(createdDate: Date): Flow<Diary>
-
-    fun getDiaryById(id: Int): Flow<Diary>
-
-    suspend fun insertDiary(diary: Diary)
-
-    suspend fun updateDiary(diary: Diary)
-
-    suspend fun deleteDiary(diary: Diary)
-}
 
 class DiaryRepositoryImpl(
     private val diaryDao: DiaryDao
@@ -42,7 +29,7 @@ class DiaryRepositoryImpl(
             it.toDomain()
         }
     }
-    
+
     override fun getDiaryById(id: Int): Flow<Diary> {
         return diaryDao.getDiaryById(id).map { it.toDomain() }
     }
@@ -52,7 +39,7 @@ class DiaryRepositoryImpl(
     }
 
     override suspend fun updateDiary(diary: Diary) {
-         diaryDao.updateDiary(diary.toEntity())
+        diaryDao.updateDiary(diary.toEntity())
     }
 
     override suspend fun deleteDiary(diary: Diary) {
