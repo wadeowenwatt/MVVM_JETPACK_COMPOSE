@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.router
+package wade.owen.watts.base_jetpack.core.router
 
 import androidx.compose.runtime.Immutable
 import androidx.navigation.NavGraphBuilder

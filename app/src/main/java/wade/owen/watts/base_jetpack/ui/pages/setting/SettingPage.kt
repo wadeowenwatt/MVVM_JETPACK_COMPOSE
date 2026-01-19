@@ -19,7 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.core.designsystem.AppFilledButton
 import wade.owen.watts.base_jetpack.core.designsystem.AppOutlinedButton
-import wade.owen.watts.base_jetpack.data.models.enums.AppTheme
+import wade.owen.watts.base_jetpack.domain.entities.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.LocalMainViewModel
 
 @Composable
@@ -48,15 +48,15 @@ fun SettingPage(
             // Text test multi language change
             Text(stringResource(R.string.list_diary_title))
             Box(Modifier.height(20.dp))
-            Button(onClick = { mainVM.changeTheme(AppTheme.DARK) }) {
-                Text(text = "Dark", color = Color.Black)
-            }
-            Button(onClick = { mainVM.changeTheme(AppTheme.LIGHT) }) {
-                Text(text = "Light", color = Color.Black)
-            }
-            Button(onClick = { mainVM.changeTheme(AppTheme.SYSTEM) }) {
-                Text(text = "System", color = Color.Black)
-            }
+            AppFilledButton(
+                text = "Dark",
+                onClick = { mainVM.changeTheme(AppTheme.DARK) })
+            AppFilledButton(
+                text = "Light",
+                onClick = { mainVM.changeTheme(AppTheme.LIGHT) })
+            AppFilledButton(
+                text = "System",
+                onClick = { mainVM.changeTheme(AppTheme.SYSTEM) })
         }
     }
 }

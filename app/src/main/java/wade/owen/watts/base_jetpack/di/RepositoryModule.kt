@@ -1,16 +1,15 @@
 package wade.owen.watts.base_jetpack.di
 
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import wade.owen.watts.base_jetpack.data.local.room_db.DiaryDao
 import wade.owen.watts.base_jetpack.data.remote.ApiService
-import wade.owen.watts.base_jetpack.data.repository.DiaryRepository
 import wade.owen.watts.base_jetpack.data.repository.DiaryRepositoryImpl
-import wade.owen.watts.base_jetpack.data.repository.KanyeWestRepository
-import wade.owen.watts.base_jetpack.data.repository.KanyeWestRepositoryImpl
+import wade.owen.watts.base_jetpack.data.repository.RandomQuoteRepositoryImpl
+import wade.owen.watts.base_jetpack.domain.repository.DiaryRepository
+import wade.owen.watts.base_jetpack.domain.repository.RandomQuoteRepository
 import javax.inject.Singleton
 
 @Module
@@ -19,10 +18,10 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideKanyeWestRepository(
+    fun provideRandomQuoteRepository(
         apiService: ApiService
-    ): KanyeWestRepository {
-        return KanyeWestRepositoryImpl(
+    ): RandomQuoteRepository {
+        return RandomQuoteRepositoryImpl(
             apiService
         )
     }

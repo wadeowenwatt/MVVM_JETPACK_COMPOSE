@@ -7,9 +7,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import wade.owen.watts.base_jetpack.core.viewmodel.BaseViewModel
-import wade.owen.watts.base_jetpack.data.repository.DiaryRepository
-import wade.owen.watts.base_jetpack.domain.models.Diary
-import wade.owen.watts.base_jetpack.domain.models.enums.LoadStatus
+import wade.owen.watts.base_jetpack.domain.entities.Diary
+import wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus
+import wade.owen.watts.base_jetpack.domain.repository.DiaryRepository
 import java.util.Date
 import javax.inject.Inject
 
@@ -98,7 +98,7 @@ class DiaryDetailViewModel @Inject constructor(
                     )
                     diaryRepository.insertDiary(newDiary)
                 }
-                
+
                 setState { copy(loadStatus = LoadStatus.SUCCESS) }
                 sendEvent(DiaryDetailEvent.NavigateBack)
             } catch (e: Exception) {

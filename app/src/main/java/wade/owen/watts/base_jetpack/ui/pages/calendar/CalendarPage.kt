@@ -14,8 +14,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import wade.owen.watts.base_jetpack.R
-import wade.owen.watts.base_jetpack.router.RootDestination
-import wade.owen.watts.base_jetpack.ui.commons.AppHeader
+import wade.owen.watts.base_jetpack.core.router.RootDestination
+import wade.owen.watts.base_jetpack.core.designsystem.AppHeader
 
 @Composable
 fun CalendarPage(

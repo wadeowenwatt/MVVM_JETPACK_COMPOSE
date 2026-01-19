@@ -9,20 +9,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import wade.owen.watts.base_jetpack.data.remote.ApiService
-import wade.owen.watts.base_jetpack.domain.models.Quote
+import wade.owen.watts.base_jetpack.domain.entities.Quote
+import wade.owen.watts.base_jetpack.domain.repository.RandomQuoteRepository
 import javax.inject.Inject
 
-interface KanyeWestRepository {
-    suspend fun getRandomQuote(
-        onStart: () -> Unit,
-        onComplete: () -> Unit,
-        onError: (String?) -> Unit,
-    ): Flow<Quote>
-}
-
-class KanyeWestRepositoryImpl @Inject constructor(
+class RandomQuoteRepositoryImpl @Inject constructor(
     private val apiService: ApiService
-) : KanyeWestRepository {
+) : RandomQuoteRepository {
     override suspend fun getRandomQuote(
         onStart: () -> Unit,
         onComplete: () -> Unit,

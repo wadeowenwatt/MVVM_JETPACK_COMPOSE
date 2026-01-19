@@ -19,10 +19,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import wade.owen.watts.base_jetpack.router.BottomNavDestination
-import wade.owen.watts.base_jetpack.router.RootDestination
-import wade.owen.watts.base_jetpack.router.RootNavHost
-import wade.owen.watts.base_jetpack.router.shouldShowBottomNavBar
+import wade.owen.watts.base_jetpack.core.router.BottomNavDestination
+import wade.owen.watts.base_jetpack.core.router.RootDestination
+import wade.owen.watts.base_jetpack.core.router.RootNavHost
+import wade.owen.watts.base_jetpack.core.router.shouldShowBottomNavBar
 
 @Composable
 fun MainPage(

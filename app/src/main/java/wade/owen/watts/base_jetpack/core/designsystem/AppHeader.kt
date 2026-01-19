@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.ui.commons
+package wade.owen.watts.base_jetpack.core.designsystem
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import wade.owen.watts.base_jetpack.R
-import wade.owen.watts.base_jetpack.utils.DateTimeFormat
+import wade.owen.watts.base_jetpack.core.utils.DateTimeFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

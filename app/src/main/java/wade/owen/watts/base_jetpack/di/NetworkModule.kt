@@ -13,7 +13,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import wade.owen.watts.base_jetpack.data.remote.ApiService
 import wade.owen.watts.base_jetpack.data.remote.ApiURL
-import wade.owen.watts.base_jetpack.networks.ApiInterceptor
+import wade.owen.watts.base_jetpack.core.networks.ApiInterceptor
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 

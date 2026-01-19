@@ -10,10 +10,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import dagger.hilt.android.AndroidEntryPoint
-import wade.owen.watts.base_jetpack.data.models.enums.AppTheme
+import wade.owen.watts.base_jetpack.domain.entities.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.ProvideMainViewModel
 import wade.owen.watts.base_jetpack.ui.theme.Jetpack_compose_mvvmTheme
-import wade.owen.watts.base_jetpack.utils.LocaleManager
+import wade.owen.watts.base_jetpack.core.utils.LocaleManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

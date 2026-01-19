@@ -7,9 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import wade.owen.watts.base_jetpack.core.viewmodel.BaseViewModel
-import wade.owen.watts.base_jetpack.data.repository.DiaryRepository
-import wade.owen.watts.base_jetpack.domain.models.Diary
-import wade.owen.watts.base_jetpack.domain.models.enums.LoadStatus
+import wade.owen.watts.base_jetpack.domain.entities.Diary
+import wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus
+import wade.owen.watts.base_jetpack.domain.repository.DiaryRepository
 import javax.inject.Inject
 
 @HiltViewModel

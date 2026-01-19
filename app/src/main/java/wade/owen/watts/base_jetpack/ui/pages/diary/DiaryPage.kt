@@ -37,10 +37,10 @@ import androidx.navigation.compose.rememberNavController
 import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
 import wade.owen.watts.base_jetpack.core.designsystem.AppIconButton
-import wade.owen.watts.base_jetpack.domain.models.Diary
-import wade.owen.watts.base_jetpack.router.RootDestination
-import wade.owen.watts.base_jetpack.ui.commons.AppHeader
-import wade.owen.watts.base_jetpack.utils.DateTimeFormat
+import wade.owen.watts.base_jetpack.domain.entities.Diary
+import wade.owen.watts.base_jetpack.core.router.RootDestination
+import wade.owen.watts.base_jetpack.core.designsystem.AppHeader
+import wade.owen.watts.base_jetpack.core.utils.DateTimeFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 

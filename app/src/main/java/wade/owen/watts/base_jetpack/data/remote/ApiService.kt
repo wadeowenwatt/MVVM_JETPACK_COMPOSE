@@ -2,7 +2,7 @@ package wade.owen.watts.base_jetpack.data.remote
 
 import com.skydoves.sandwich.ApiResponse
 import retrofit2.http.GET
-import wade.owen.watts.base_jetpack.domain.models.Quote
+import wade.owen.watts.base_jetpack.domain.entities.Quote
 
 interface ApiService {
     @GET("/")

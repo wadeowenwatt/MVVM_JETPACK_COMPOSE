@@ -1,4 +1,4 @@
-package wade.owen.watts.base_jetpack.domain.models
+package wade.owen.watts.base_jetpack.domain.entities
 
 import java.util.Date
 
