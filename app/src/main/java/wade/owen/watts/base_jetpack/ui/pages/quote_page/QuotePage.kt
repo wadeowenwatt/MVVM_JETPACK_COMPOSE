@@ -24,7 +24,7 @@ fun QuotePage(
     modifier: Modifier = Modifier,
     viewModel: QuoteViewModel = hiltViewModel<QuoteViewModel>()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.state.collectAsState()
 
     Box(
         modifier = modifier
@@ -41,7 +41,7 @@ fun QuotePage(
             )
 
             Text(
-                text = "__ Linh Tran __",
+                text = "__ Kayne West __",
                 fontSize = 16.sp,
                 fontStyle = FontStyle.Italic,
                 textAlign = TextAlign.End,
