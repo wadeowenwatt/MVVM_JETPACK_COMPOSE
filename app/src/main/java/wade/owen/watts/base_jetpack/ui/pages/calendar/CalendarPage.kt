@@ -19,11 +19,44 @@ import java.nio.ByteOrder
 import com.google.android.filament.LightManager
 import com.google.android.filament.EntityManager
 
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
+import kotlin.random.Random
+
 @Composable
 fun CalendarPage(modifier: Modifier = Modifier) {
+    var sphereColor by remember { mutableStateOf(Color.Cyan) }
+
     Box(modifier) {
-        WireframeSphereView(modifier)
+        WireframeSphereView(
+            modifier = modifier,
+            sphereColor = sphereColor
+        )
         TouchPad2DView(modifier)
+
+        Button(
+            onClick = {
+                sphereColor = Color(
+                    red = Random.nextFloat(),
+                    green = Random.nextFloat(),
+                    blue = Random.nextFloat(),
+                    alpha = 1f
+                )
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 120.dp)
+        ) {
+            Text("Change Color")
+        }
     }
 }
 

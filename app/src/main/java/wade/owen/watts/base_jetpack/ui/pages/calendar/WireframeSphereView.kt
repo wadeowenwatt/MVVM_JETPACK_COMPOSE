@@ -12,8 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere.WireframeSphereRenderer
 
+import androidx.compose.ui.graphics.toArgb
+
 @Composable
-fun WireframeSphereView(modifier: Modifier = Modifier) {
+fun WireframeSphereView(
+    modifier: Modifier = Modifier,
+    sphereColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Cyan
+) {
     val anim = remember { Animatable(0f) }
     val renderer = remember { WireframeSphereRenderer() }
 
@@ -99,6 +104,8 @@ fun WireframeSphereView(modifier: Modifier = Modifier) {
             if (anim.value < 1f) {
                 renderer.zoom(1.05f)
             }
+            // Update color
+            renderer.setSphereColor(sphereColor.toArgb())
         }
     )
 }

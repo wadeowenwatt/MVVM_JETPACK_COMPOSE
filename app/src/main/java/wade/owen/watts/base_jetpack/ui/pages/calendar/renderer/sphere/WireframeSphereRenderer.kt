@@ -41,6 +41,20 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
     // Data
     private var indexCount = 0
 
+    // Color state
+    private var colorHandle: Int = 0
+    // Default to transparent (0,0,0,0) to let vertex color show through,
+    // or set a default color if preferred.
+    // user wants to change color, let's start with a default or 0.
+    // The shader logic: (uColor.a > 0.0) ? uColor : vColor
+    private val sphereColor = FloatArray(4).apply {
+        // Initialize to 0 so default look is preserved until set
+        this[0] = 0f
+        this[1] = 0f
+        this[2] = 0f
+        this[3] = 0f
+    }
+
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         // Set clear color to Dark Gray for debugging (to confirm GL is running)
         GLES30.glClearColor(0.1f, 0.1f, 0.1f, 1.0f)
@@ -81,6 +95,7 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
         timeHandle = GLES30.glGetUniformLocation(programId, "uTime")
         isPointHandle = GLES30.glGetUniformLocation(programId, "uIsPoint")
         cameraDistanceHandle = GLES30.glGetUniformLocation(programId, "uCameraDistance")
+        colorHandle = GLES30.glGetUniformLocation(programId, "uColor")
 
         // 3. Generate Sphere Data
         val (vertices, indices) = SphereGridGenerator.generateCustomSphere(1.0f)
@@ -148,6 +163,9 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
 
         // Camera Distance
         GLES30.glUniform1f(cameraDistanceHandle, cameraDistance)
+        
+        // Color
+        GLES30.glUniform4fv(colorHandle, 1, sphereColor, 0)
 
         // Auto Rotation
         angleY += autoRotationSpeed
@@ -186,6 +204,23 @@ class WireframeSphereRenderer : GLSurfaceView.Renderer {
     fun rotate(deltaX: Float, deltaY: Float) {
         angleX += deltaY
         angleY += deltaX
+    }
+    
+    /**
+     * Update sphere color.
+     * @param color Android Color Integer (ARGB)
+     */
+    fun setSphereColor(color: Int) {
+        // Convert Android color (AARRGGBB) to OpenGL color (R, G, B, A normalized 0..1)
+        val alpha = (android.graphics.Color.alpha(color) / 255.0f).coerceAtLeast(0.01f) // Ensure alpha exists so shader picks it up
+        val red = android.graphics.Color.red(color) / 255.0f
+        val green = android.graphics.Color.green(color) / 255.0f
+        val blue = android.graphics.Color.blue(color) / 255.0f
+        
+        sphereColor[0] = red
+        sphereColor[1] = green
+        sphereColor[2] = blue
+        sphereColor[3] = alpha
     }
 
     private var cameraDistance = 50f // Initial distance

@@ -63,11 +63,13 @@ object NeonShader {
         in float vBrightness;
         uniform float uTime;
         uniform bool uIsPoint;
+        uniform vec4 uColor; // New uniform for dynamic color
         
         out vec4 fragColor;
         
         void main() {
-            vec4 baseColor = vColor;
+            // Use uColor if provided (alpha > 0), otherwise fallback to vColor or default
+            vec4 baseColor = (uColor.a > 0.0) ? uColor : vColor;
         
             if (uIsPoint) {
                 vec2 uv = gl_PointCoord - vec2(0.5);
