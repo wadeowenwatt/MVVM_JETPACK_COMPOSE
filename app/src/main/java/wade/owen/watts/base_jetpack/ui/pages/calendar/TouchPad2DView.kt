@@ -10,11 +10,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.touchpad.TouchPad2DRenderer
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun TouchPad2DView(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val anim = remember { Animatable(0f) }
-    val renderer = remember { TouchPad2DRenderer() }
+    val renderer = remember { TouchPad2DRenderer(context) }
 
     LaunchedEffect(Unit) {
         anim.animateTo(

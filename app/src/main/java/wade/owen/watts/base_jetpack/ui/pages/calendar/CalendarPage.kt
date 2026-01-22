@@ -40,7 +40,7 @@ fun CalendarPage(modifier: Modifier = Modifier) {
             modifier = modifier,
             sphereColor = sphereColor
         )
-        TouchPad2DView(modifier)
+//        TouchPad2DView(modifier)
 
         Button(
             onClick = {
@@ -67,7 +67,7 @@ fun Cube3DView(modifier: Modifier = Modifier) {
         factory = { context ->
             GLSurfaceView(context).apply {
                 setEGLContextClientVersion(3)
-                val renderer = IcosahedronRenderer()
+                val renderer = IcosahedronRenderer(context)
                 setRenderer(renderer)
                 renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 

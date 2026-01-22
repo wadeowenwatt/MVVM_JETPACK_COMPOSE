@@ -1,15 +1,17 @@
 package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere
 
+import android.content.Context
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import wade.owen.watts.base_jetpack.ui.pages.calendar.shader.ShapeShader
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class IcosahedronRenderer : GLSurfaceView.Renderer {
+class IcosahedronRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     // Rotation angles in degrees
     @Volatile
@@ -159,8 +161,11 @@ class IcosahedronRenderer : GLSurfaceView.Renderer {
         GLES30.glEnable(GLES30.GL_DEPTH_TEST)
 
         // Compile and Link Program
-        val vertexShader = loadShader(GLES30.GL_VERTEX_SHADER, ShapeShader.VERTEX_SHADER_CODE)
-        val fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER, ShapeShader.FRAGMENT_SHADER_CODE)
+        val vertexShaderCode = loadShaderFromAssets("shaders/shape_vertex.glsl")
+        val fragmentShaderCode = loadShaderFromAssets("shaders/shape_fragment.glsl")
+
+        val vertexShader = loadShader(GLES30.GL_VERTEX_SHADER, vertexShaderCode)
+        val fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER, fragmentShaderCode)
         programId = GLES30.glCreateProgram().also {
             GLES30.glAttachShader(it, vertexShader)
             GLES30.glAttachShader(it, fragmentShader)
@@ -272,6 +277,23 @@ class IcosahedronRenderer : GLSurfaceView.Renderer {
                  GLES30.glDeleteShader(shader)
                  throw RuntimeException("Could not compile shader $type: " + GLES30.glGetShaderInfoLog(shader))
             }
+        }
+    }
+
+    private fun loadShaderFromAssets(fileName: String): String {
+        return try {
+            val inputStream = context.assets.open(fileName)
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            val sb = StringBuilder()
+            var line: String? = reader.readLine()
+            while (line != null) {
+                sb.append(line).append("\n")
+                line = reader.readLine()
+            }
+            reader.close()
+            sb.toString()
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to load shader: $fileName", e)
         }
     }
 }

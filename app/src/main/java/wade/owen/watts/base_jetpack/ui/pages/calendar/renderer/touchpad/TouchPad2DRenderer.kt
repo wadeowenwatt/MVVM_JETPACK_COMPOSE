@@ -1,17 +1,19 @@
 package wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.touchpad
 
+import android.content.Context
 import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere.SphereGridGenerator
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.SystemClock
-import wade.owen.watts.base_jetpack.ui.pages.calendar.shader.NeonShader
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class TouchPad2DRenderer : GLSurfaceView.Renderer {
+class TouchPad2DRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     // Rotation state
     @Volatile
@@ -58,8 +60,11 @@ class TouchPad2DRenderer : GLSurfaceView.Renderer {
         GLES30.glLineWidth(5f)
 
         // 1. Compile Shaders
-        val vertexShader = loadShader(GLES30.GL_VERTEX_SHADER, NeonShader.VERTEX_SHADER)
-        val fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER, NeonShader.FRAGMENT_SHADER_WITH_TOGGLE)
+        val vertexShaderCode = loadShaderFromAssets("shaders/neon_vertex.glsl")
+        val fragmentShaderCode = loadShaderFromAssets("shaders/neon_fragment_toggle.glsl")
+
+        val vertexShader = loadShader(GLES30.GL_VERTEX_SHADER, vertexShaderCode)
+        val fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER, fragmentShaderCode)
 
         programId = GLES30.glCreateProgram().also {
             GLES30.glAttachShader(it, vertexShader)
@@ -208,6 +213,23 @@ class TouchPad2DRenderer : GLSurfaceView.Renderer {
                 GLES30.glDeleteShader(shader)
                 throw RuntimeException("Shader Error: " + GLES30.glGetShaderInfoLog(shader))
             }
+        }
+    }
+
+    private fun loadShaderFromAssets(fileName: String): String {
+        return try {
+            val inputStream = context.assets.open(fileName)
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            val sb = StringBuilder()
+            var line: String? = reader.readLine()
+            while (line != null) {
+                sb.append(line).append("\n")
+                line = reader.readLine()
+            }
+            reader.close()
+            sb.toString()
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to load shader: $fileName", e)
         }
     }
 }

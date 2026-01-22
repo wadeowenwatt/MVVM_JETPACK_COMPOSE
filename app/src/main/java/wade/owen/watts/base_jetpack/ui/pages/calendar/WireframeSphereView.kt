@@ -13,14 +13,16 @@ import androidx.compose.ui.viewinterop.AndroidView
 import wade.owen.watts.base_jetpack.ui.pages.calendar.renderer.sphere.WireframeSphereRenderer
 
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun WireframeSphereView(
     modifier: Modifier = Modifier,
     sphereColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Cyan
 ) {
+    val context = LocalContext.current
     val anim = remember { Animatable(0f) }
-    val renderer = remember { WireframeSphereRenderer() }
+    val renderer = remember { WireframeSphereRenderer(context) }
 
     LaunchedEffect(Unit) {
         anim.animateTo(
