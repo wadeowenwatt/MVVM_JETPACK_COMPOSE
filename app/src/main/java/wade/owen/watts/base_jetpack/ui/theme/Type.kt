@@ -8,9 +8,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import wade.owen.watts.base_jetpack.R
 
+// ── Existing app font ──────────────────────────────────────────────────────────
 val fontFamily: FontFamily = FontFamily(
     Font(R.font.momo_signature_regular),
 )
+
+// ── Inter equivalent — system sans-serif (closest to Inter on Android) ─────────
+// FontFamily.SansSerif maps to Roboto/system sans which closely matches Inter.
+val InterFontFamily: FontFamily = FontFamily.SansSerif
 
 // Set of Material typography styles to start with
 val lightTypography = Typography(

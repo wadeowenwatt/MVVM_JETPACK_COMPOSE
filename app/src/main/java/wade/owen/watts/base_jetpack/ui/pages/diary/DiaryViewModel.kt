@@ -62,4 +62,17 @@ class DiaryViewModel @Inject constructor(
             }
         }
     }
+
+    fun toggleSearch() {
+        setState {
+            copy(
+                isSearchActive = !isSearchActive,
+                searchQuery = if (isSearchActive) "" else searchQuery
+            )
+        }
+    }
+
+    fun updateSearchQuery(query: String) {
+        setState { copy(searchQuery = query) }
+    }
 }
