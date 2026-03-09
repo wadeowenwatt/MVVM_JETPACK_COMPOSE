@@ -35,8 +35,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        JvmTarget.JVM_21
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
     buildFeatures {
         compose = true
@@ -81,6 +83,13 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation(libs.converter.moshi)
     ksp(libs.moshi.kotlin.codegen) // Moshi codegen
+
+    // Rich Text Editor
+    implementation(libs.compose.rich.editor)
+
+    // Location services
+    implementation(libs.play.services.location)
+    implementation(libs.accompanist.permissions)
 
     // Test and debug
     testImplementation(libs.junit)

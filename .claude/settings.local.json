@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__StitchMCP__get_screen",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(./gradlew :app:compileDebugKotlin:*)",
+      "Bash(./gradlew :app:dependencies:*)",
+      "Bash(xargs -I{} jar tf {})",
+      "Bash(jar tf:*)"
+    ]
+  }
+}
