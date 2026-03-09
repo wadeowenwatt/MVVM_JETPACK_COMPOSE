@@ -7,7 +7,9 @@
       "Bash(./gradlew :app:compileDebugKotlin:*)",
       "Bash(./gradlew :app:dependencies:*)",
       "Bash(xargs -I{} jar tf {})",
-      "Bash(jar tf:*)"
+      "Bash(jar tf:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(./gradlew compileDebugKotlin:*)"
     ]
   }
 }

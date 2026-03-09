@@ -11,22 +11,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Color.Black,
-    secondary = Color.White,
-    tertiary = Pink80
+private val LightColorScheme = lightColorScheme(
+    primary = DiaryPrimary,
+    onPrimary = Color.White,
+    background = DiaryBackgroundLight,
+    onBackground = DiaryPrimary,
+    surface = DiaryCardLight,
+    onSurface = DiaryPrimary,
+    surfaceVariant = Color(0xFFF1F5F9),
+    onSurfaceVariant = Slate600,
+    outline = DiaryBorderLight,
+    outlineVariant = DiaryBorderLight,
+    secondary = Slate500,
+    onSecondary = Color.White,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Color.White,
-    secondary = Color.Black,
-    tertiary = Pink40
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFFF1F5F9),
+    onPrimary = DiaryBackgroundDark,
+    background = DiaryBackgroundDark,
+    onBackground = Color(0xFFF1F5F9),
+    surface = DiaryCardDark,
+    onSurface = Color(0xFFF1F5F9),
+    surfaceVariant = Slate800,
+    onSurfaceVariant = Slate400,
+    outline = DiaryBorderDark,
+    outlineVariant = DiaryBorderDark,
+    secondary = Slate400,
+    onSecondary = DiaryBackgroundDark,
 )
 
 @Composable
 fun Jetpack_compose_mvvmTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -41,14 +59,9 @@ fun Jetpack_compose_mvvmTheme(
         else -> LightColorScheme
     }
 
-    val typography = when {
-        darkTheme -> darkTypography
-        else -> lightTypography
-    }
-
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = typography,
+        typography = lightTypography,
         content = content
     )
 }

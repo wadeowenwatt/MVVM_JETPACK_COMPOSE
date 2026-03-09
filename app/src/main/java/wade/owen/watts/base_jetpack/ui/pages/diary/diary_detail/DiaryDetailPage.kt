@@ -11,7 +11,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -54,10 +54,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,34 +71,9 @@ import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
-import wade.owen.watts.base_jetpack.ui.theme.DiaryBackgroundDark
-import wade.owen.watts.base_jetpack.ui.theme.DiaryBackgroundLight
-import wade.owen.watts.base_jetpack.ui.theme.DiaryBorderDark
-import wade.owen.watts.base_jetpack.ui.theme.DiaryBorderLight
-import wade.owen.watts.base_jetpack.ui.theme.DiaryPrimary
-import wade.owen.watts.base_jetpack.ui.theme.InterFontFamily
-import wade.owen.watts.base_jetpack.ui.theme.Slate400
-import wade.owen.watts.base_jetpack.ui.theme.Slate500
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-// ─── Colour helpers (reuse same pattern as DiaryPage) ─────────────────────────
-
-@Composable
-private fun isDark() = isSystemInDarkTheme()
-
-private fun bgColor(dark: Boolean) =
-    if (dark) DiaryBackgroundDark else DiaryBackgroundLight
-
-private fun textPrimary(dark: Boolean) =
-    if (dark) Color(0xFFF1F5F9) else DiaryPrimary
-
-private fun textMuted(dark: Boolean) = if (dark) Slate400 else Slate500
-private fun borderColor(dark: Boolean) =
-    if (dark) DiaryBorderDark else DiaryBorderLight
-
-private fun toolbarIconTint(dark: Boolean) = if (dark) Slate400 else Slate500
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -109,7 +85,8 @@ fun DiaryDetailPage(
     viewModel: DiaryDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
-    val dark = isDark()
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
     val isNew = uiState.diaryId == null
 
     // ── RichTextEditor state ──────────────────────────────────────────────────
@@ -165,14 +142,12 @@ fun DiaryDetailPage(
 
     // ─────────────────────────────────────────────────────────────────────────
     Scaffold(
-        containerColor = bgColor(dark),
+        containerColor = cs.background,
         snackbarHost = {
             SnackbarHost(snackbar) { data ->
                 Snackbar(
                     snackbarData = data,
-                    containerColor = if (dark) Color(0xFF1E293B) else Color(
-                        0xFF1E293B
-                    ),
+                    containerColor = Color(0xFF1E293B),
                     contentColor = Color.White,
                     shape = RoundedCornerShape(12.dp),
                 )
@@ -180,7 +155,6 @@ fun DiaryDetailPage(
         },
         topBar = {
             DiaryDetailTopBar(
-                dark = dark,
                 isNew = isNew,
                 isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
                 onBack = { viewModel.checkChangesAndDismiss() },
@@ -199,13 +173,11 @@ fun DiaryDetailPage(
             Text(
                 text = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
                     .format(Date()).uppercase(Locale.getDefault()),
-                style = TextStyle(
-                    fontFamily = InterFontFamily,
+                style = ty.labelSmall.copy(
                     fontWeight = FontWeight.Medium,
-                    fontSize = 11.sp,
                     letterSpacing = 1.6.sp,
                 ),
-                color = textMuted(dark),
+                color = cs.onSurfaceVariant,
                 modifier = Modifier.padding(
                     horizontal = 20.dp,
                     vertical = 24.dp
@@ -219,25 +191,19 @@ fun DiaryDetailPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
-                textStyle = TextStyle(
-                    fontFamily = InterFontFamily,
+                textStyle = ty.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    color = textPrimary(dark),
                     lineHeight = 36.sp,
+                    color = cs.onBackground,
                 ),
-                cursorBrush = androidx.compose.ui.graphics.SolidColor(
-                    textPrimary(dark)
-                ),
+                cursorBrush = SolidColor(cs.onBackground),
                 decorationBox = { inner ->
                     if (uiState.title.isEmpty()) {
                         Text(
                             text = "Entry Title",
-                            style = TextStyle(
-                                fontFamily = InterFontFamily,
+                            style = ty.headlineMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 28.sp,
-                                color = textMuted(dark).copy(alpha = 0.4f),
+                                color = cs.onSurfaceVariant.copy(alpha = 0.4f),
                             )
                         )
                     }
@@ -248,7 +214,7 @@ fun DiaryDetailPage(
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                color = borderColor(dark),
+                color = cs.outline,
                 thickness = 1.dp,
             )
             Spacer(Modifier.height(12.dp))
@@ -263,18 +229,15 @@ fun DiaryDetailPage(
                 placeholder = {
                     Text(
                         text = "How was your day?",
-                        style = TextStyle(
-                            fontFamily = InterFontFamily,
-                            fontSize = 16.sp,
-                            color = textMuted(dark).copy(alpha = 0.5f),
+                        style = ty.bodyLarge.copy(
+                            lineHeight = 26.sp,
+                            color = cs.onSurfaceVariant.copy(alpha = 0.5f),
                         )
                     )
                 },
-                textStyle = TextStyle(
-                    fontFamily = InterFontFamily,
-                    fontSize = 16.sp,
+                textStyle = ty.bodyLarge.copy(
                     lineHeight = 26.sp,
-                    color = textPrimary(dark),
+                    color = cs.onBackground,
                 ),
                 colors = RichTextEditorDefaults.richTextEditorColors(
                     containerColor = Color.Transparent,
@@ -304,7 +267,6 @@ fun DiaryDetailPage(
 
             // ── Bottom toolbar ────────────────────────────────────────────────
             DiaryBottomToolbar(
-                dark = dark,
                 wordCount = uiState.wordCount,
                 isLoadingLocation = uiState.isLoadingLocation,
                 onImageClick = { imageLauncher.launch("image/*") },
@@ -337,16 +299,18 @@ fun DiaryDetailPage(
 
 @Composable
 private fun DiaryDetailTopBar(
-    dark: Boolean,
     isNew: Boolean,
     isSaving: Boolean,
     onBack: () -> Unit,
     onSave: () -> Unit,
 ) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(bgColor(dark))
+            .background(cs.background)
     ) {
         Row(
             modifier = Modifier
@@ -359,7 +323,7 @@ private fun DiaryDetailTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = textPrimary(dark),
+                    tint = cs.onBackground,
                     modifier = Modifier.size(22.dp),
                 )
             }
@@ -367,14 +331,10 @@ private fun DiaryDetailTopBar(
             // Title (centered)
             Text(
                 text = if (isNew) "New diary" else "Edit diary",
-                style = TextStyle(
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp,
-                ),
-                color = textPrimary(dark),
+                style = ty.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = cs.onBackground,
                 modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
             )
 
             // Save button
@@ -385,26 +345,25 @@ private fun DiaryDetailTopBar(
                 if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = textPrimary(dark),
+                        color = cs.onBackground,
                         strokeWidth = 2.dp,
                     )
                 } else {
                     TextButton(onClick = onSave) {
                         Text(
                             text = "Save",
-                            style = TextStyle(
-                                fontFamily = InterFontFamily,
+                            style = ty.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,
                             ),
-                            color = textPrimary(dark),
+                            color = cs.onBackground,
                         )
                     }
                 }
             }
         }
 
-        HorizontalDivider(color = borderColor(dark), thickness = 1.dp)
+        HorizontalDivider(color = cs.outline, thickness = 1.dp)
     }
 }
 
@@ -412,23 +371,24 @@ private fun DiaryDetailTopBar(
 
 @Composable
 private fun DiaryBottomToolbar(
-    dark: Boolean,
     wordCount: Int,
     isLoadingLocation: Boolean,
     onImageClick: () -> Unit,
     onLocationClick: () -> Unit,
     onTtsClick: () -> Unit,
 ) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+
     Column {
         HorizontalDivider(
-            color = borderColor(dark),
+            color = cs.outline,
             thickness = 1.dp,
-            modifier = Modifier.padding(horizontal = 0.dp),
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(bgColor(dark))
+                .background(cs.background)
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -437,7 +397,7 @@ private fun DiaryBottomToolbar(
                 Icon(
                     painter = painterResource(android.R.drawable.ic_menu_gallery),
                     contentDescription = "Add image",
-                    tint = toolbarIconTint(dark),
+                    tint = cs.onSurfaceVariant,
                     modifier = Modifier.size(24.dp),
                 )
             }
@@ -450,7 +410,7 @@ private fun DiaryBottomToolbar(
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = "Text to speech (coming soon)",
-                    tint = toolbarIconTint(dark).copy(alpha = 0.3f),
+                    tint = cs.onSurfaceVariant.copy(alpha = 0.3f),
                     modifier = Modifier.size(24.dp),
                 )
             }
@@ -460,14 +420,14 @@ private fun DiaryBottomToolbar(
                 if (isLoadingLocation) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = toolbarIconTint(dark),
+                        color = cs.onSurfaceVariant,
                         strokeWidth = 2.dp,
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = "Insert location",
-                        tint = toolbarIconTint(dark),
+                        tint = cs.onSurfaceVariant,
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -478,12 +438,8 @@ private fun DiaryBottomToolbar(
             // ── Word count ─────────────────────────────────────────────────
             Text(
                 text = "$wordCount word${if (wordCount == 1) "" else "s"}",
-                style = TextStyle(
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                ),
-                color = textMuted(dark),
+                style = ty.labelMedium,
+                color = cs.onSurfaceVariant,
             )
         }
     }

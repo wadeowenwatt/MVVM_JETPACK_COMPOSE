@@ -49,11 +49,11 @@ class DiaryDetailViewModel @Inject constructor(
             diaryRepository.getDiaryById(id).collect { diary ->
                 setState {
                     copy(
-                        title        = diary.title,
-                        content      = diary.content,
-                        diaryId      = diary.id,
+                        title = diary.title,
+                        content = diary.content,
+                        diaryId = diary.id,
                         originalDiary = diary,
-                        wordCount    = countWords(diary.content),
+                        wordCount = countWords(diary.content),
                     )
                 }
             }
@@ -91,15 +91,23 @@ class DiaryDetailViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isLoadingLocation = true) }
             try {
-                val fusedClient = LocationServices.getFusedLocationProviderClient(context)
-                val cancelSrc   = CancellationTokenSource()
+                val fusedClient =
+                    LocationServices.getFusedLocationProviderClient(context)
+                val cancelSrc = CancellationTokenSource()
 
                 val location = withContext(Dispatchers.IO) {
                     suspendCancellableCoroutine { cont ->
                         fusedClient
-                            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cancelSrc.token)
+                            .getCurrentLocation(
+                                Priority.PRIORITY_HIGH_ACCURACY,
+                                cancelSrc.token
+                            )
                             .addOnSuccessListener { loc -> cont.resume(loc) }
-                            .addOnFailureListener { e  -> cont.resumeWithException(e) }
+                            .addOnFailureListener { e ->
+                                cont.resumeWithException(
+                                    e
+                                )
+                            }
                         cont.invokeOnCancellation { cancelSrc.cancel() }
                     }
                 }
@@ -111,9 +119,8 @@ class DiaryDetailViewModel @Inject constructor(
                 setState {
                     copy(
                         isLoadingLocation = false,
-                        locationText      = address,
-                        // Append địa chỉ vào cuối content
-                        content           = if (content.isBlank()) "📍 $address"
+                        locationText = address,
+                        content = if (content.isBlank()) "📍 $address"
                         else "$content\n\n📍 $address",
                     )
                 }
@@ -194,16 +201,16 @@ class DiaryDetailViewModel @Inject constructor(
                 if (s.originalDiary != null) {
                     diaryRepository.updateDiary(
                         s.originalDiary.copy(
-                            title       = s.title,
-                            content     = s.content,
+                            title = s.title,
+                            content = s.content,
                             updatedDate = Date(),
                         )
                     )
                 } else {
                     diaryRepository.insertDiary(
                         Diary(
-                            title       = s.title,
-                            content     = s.content,
+                            title = s.title,
+                            content = s.content,
                             createdDate = Date(),
                             updatedDate = Date(),
                         )
