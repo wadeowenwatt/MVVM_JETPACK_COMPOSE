@@ -84,12 +84,19 @@ import java.util.Locale
 
 // ─── Colour helpers (reuse same pattern as DiaryPage) ─────────────────────────
 
-@Composable private fun isDark() = isSystemInDarkTheme()
+@Composable
+private fun isDark() = isSystemInDarkTheme()
 
-private fun bgColor(dark: Boolean)      = if (dark) DiaryBackgroundDark else DiaryBackgroundLight
-private fun textPrimary(dark: Boolean)  = if (dark) Color(0xFFF1F5F9)   else DiaryPrimary
-private fun textMuted(dark: Boolean)    = if (dark) Slate400              else Slate500
-private fun borderColor(dark: Boolean)  = if (dark) DiaryBorderDark      else DiaryBorderLight
+private fun bgColor(dark: Boolean) =
+    if (dark) DiaryBackgroundDark else DiaryBackgroundLight
+
+private fun textPrimary(dark: Boolean) =
+    if (dark) Color(0xFFF1F5F9) else DiaryPrimary
+
+private fun textMuted(dark: Boolean) = if (dark) Slate400 else Slate500
+private fun borderColor(dark: Boolean) =
+    if (dark) DiaryBorderDark else DiaryBorderLight
+
 private fun toolbarIconTint(dark: Boolean) = if (dark) Slate400 else Slate500
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -102,8 +109,8 @@ fun DiaryDetailPage(
     viewModel: DiaryDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
-    val dark     = isDark()
-    val isNew    = uiState.diaryId == null
+    val dark = isDark()
+    val isNew = uiState.diaryId == null
 
     // ── RichTextEditor state ──────────────────────────────────────────────────
     val richState = rememberRichTextState()
@@ -129,10 +136,14 @@ fun DiaryDetailPage(
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
-                is DiaryDetailEvent.NavigateBack      -> navController.popBackStack()
-                is DiaryDetailEvent.DiaryDetailError  -> snackbar.showSnackbar(event.message)
-                is DiaryDetailEvent.LocationInserted  -> snackbar.showSnackbar("📍 ${event.address}")
-                is DiaryDetailEvent.ImagePicked       -> { /* handled via addImage */ }
+                is DiaryDetailEvent.NavigateBack -> navController.popBackStack()
+                is DiaryDetailEvent.DiaryDetailError -> snackbar.showSnackbar(
+                    event.message
+                )
+
+                is DiaryDetailEvent.LocationInserted -> snackbar.showSnackbar("📍 ${event.address}")
+                is DiaryDetailEvent.ImagePicked -> { /* handled via addImage */
+                }
             }
         }
     }
@@ -155,23 +166,25 @@ fun DiaryDetailPage(
     // ─────────────────────────────────────────────────────────────────────────
     Scaffold(
         containerColor = bgColor(dark),
-        snackbarHost   = {
+        snackbarHost = {
             SnackbarHost(snackbar) { data ->
                 Snackbar(
-                    snackbarData    = data,
-                    containerColor  = if (dark) Color(0xFF1E293B) else Color(0xFF1E293B),
-                    contentColor    = Color.White,
-                    shape           = RoundedCornerShape(12.dp),
+                    snackbarData = data,
+                    containerColor = if (dark) Color(0xFF1E293B) else Color(
+                        0xFF1E293B
+                    ),
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(12.dp),
                 )
             }
         },
         topBar = {
             DiaryDetailTopBar(
-                dark     = dark,
-                isNew    = isNew,
+                dark = dark,
+                isNew = isNew,
                 isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
-                onBack   = { viewModel.checkChangesAndDismiss() },
-                onSave   = { viewModel.saveDiary() },
+                onBack = { viewModel.checkChangesAndDismiss() },
+                onSave = { viewModel.saveDiary() },
             )
         },
     ) { innerPadding ->
@@ -184,42 +197,47 @@ fun DiaryDetailPage(
         ) {
             // ── Date label ────────────────────────────────────────────────────
             Text(
-                text  = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
+                text = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
                     .format(Date()).uppercase(Locale.getDefault()),
                 style = TextStyle(
-                    fontFamily    = InterFontFamily,
-                    fontWeight    = FontWeight.Medium,
-                    fontSize      = 11.sp,
+                    fontFamily = InterFontFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 11.sp,
                     letterSpacing = 1.6.sp,
                 ),
-                color    = textMuted(dark),
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                color = textMuted(dark),
+                modifier = Modifier.padding(
+                    horizontal = 20.dp,
+                    vertical = 24.dp
+                ),
             )
 
             // ── Title ─────────────────────────────────────────────────────────
             androidx.compose.foundation.text.BasicTextField(
-                value         = uiState.title,
+                value = uiState.title,
                 onValueChange = { viewModel.updateTitle(it) },
-                modifier      = Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
                 textStyle = TextStyle(
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize   = 28.sp,
-                    color      = textPrimary(dark),
-                    lineHeight  = 36.sp,
+                    fontSize = 28.sp,
+                    color = textPrimary(dark),
+                    lineHeight = 36.sp,
                 ),
-                cursorBrush = androidx.compose.ui.graphics.SolidColor(textPrimary(dark)),
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(
+                    textPrimary(dark)
+                ),
                 decorationBox = { inner ->
                     if (uiState.title.isEmpty()) {
                         Text(
-                            text  = "Entry Title",
+                            text = "Entry Title",
                             style = TextStyle(
                                 fontFamily = InterFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize   = 28.sp,
-                                color      = textMuted(dark).copy(alpha = 0.4f),
+                                fontSize = 28.sp,
+                                color = textMuted(dark).copy(alpha = 0.4f),
                             )
                         )
                     }
@@ -229,38 +247,38 @@ fun DiaryDetailPage(
 
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(
-                modifier  = Modifier.padding(horizontal = 20.dp),
-                color     = borderColor(dark),
+                modifier = Modifier.padding(horizontal = 20.dp),
+                color = borderColor(dark),
                 thickness = 1.dp,
             )
             Spacer(Modifier.height(12.dp))
 
             // ── Rich Text Editor ──────────────────────────────────────────────
             RichTextEditor(
-                state         = richState,
-                modifier      = Modifier
+                state = richState,
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
                     .height(320.dp),
-                placeholder   = {
+                placeholder = {
                     Text(
-                        text  = "How was your day?",
+                        text = "How was your day?",
                         style = TextStyle(
                             fontFamily = InterFontFamily,
-                            fontSize   = 16.sp,
-                            color      = textMuted(dark).copy(alpha = 0.5f),
+                            fontSize = 16.sp,
+                            color = textMuted(dark).copy(alpha = 0.5f),
                         )
                     )
                 },
                 textStyle = TextStyle(
                     fontFamily = InterFontFamily,
-                    fontSize   = 16.sp,
-                    lineHeight  = 26.sp,
-                    color      = textPrimary(dark),
+                    fontSize = 16.sp,
+                    lineHeight = 26.sp,
+                    color = textPrimary(dark),
                 ),
                 colors = RichTextEditorDefaults.richTextEditorColors(
-                    containerColor     = Color.Transparent,
-                    focusedIndicatorColor   = Color.Transparent,
+                    containerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                 ),
             )
@@ -269,13 +287,13 @@ fun DiaryDetailPage(
             if (uiState.imageUris.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
                 LazyRow(
-                    modifier       = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     items(uiState.imageUris) { uri ->
                         DiaryImageThumbnail(
-                            uri      = uri,
+                            uri = uri,
                             onRemove = { viewModel.removeImage(uri) },
                         )
                     }
@@ -286,18 +304,18 @@ fun DiaryDetailPage(
 
             // ── Bottom toolbar ────────────────────────────────────────────────
             DiaryBottomToolbar(
-                dark              = dark,
-                wordCount         = uiState.wordCount,
+                dark = dark,
+                wordCount = uiState.wordCount,
                 isLoadingLocation = uiState.isLoadingLocation,
-                onImageClick      = { imageLauncher.launch("image/*") },
-                onLocationClick   = {
+                onImageClick = { imageLauncher.launch("image/*") },
+                onLocationClick = {
                     if (locationPerms.allPermissionsGranted) {
                         viewModel.fetchAndInsertLocation()
                     } else {
                         locationPerms.launchMultiplePermissionRequest()
                     }
                 },
-                onTtsClick        = { viewModel.onTtsClick() },
+                onTtsClick = { viewModel.onTtsClick() },
             )
         }
     }
@@ -305,10 +323,10 @@ fun DiaryDetailPage(
     // ── Discard dialog ────────────────────────────────────────────────────────
     if (uiState.showDiscardDialog) {
         AppAlertDialog(
-            title              = "Discard Changes?",
-            content            = "Your unsaved changes will be lost. Do you want to continue?",
-            onConfirm          = { viewModel.confirmDiscard() },
-            onDismissRequest   = { viewModel.dismissDiscardDialog() },
+            title = "Discard Changes?",
+            content = "Your unsaved changes will be lost. Do you want to continue?",
+            onConfirm = { viewModel.confirmDiscard() },
+            onDismissRequest = { viewModel.dismissDiscardDialog() },
             titleButtonConfirm = "Discard",
             titleButtonDismiss = "Keep Editing",
         )
@@ -319,11 +337,11 @@ fun DiaryDetailPage(
 
 @Composable
 private fun DiaryDetailTopBar(
-    dark    : Boolean,
-    isNew   : Boolean,
+    dark: Boolean,
+    isNew: Boolean,
     isSaving: Boolean,
-    onBack  : () -> Unit,
-    onSave  : () -> Unit,
+    onBack: () -> Unit,
+    onSave: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -339,42 +357,45 @@ private fun DiaryDetailTopBar(
             // Back button
             IconButton(onClick = onBack) {
                 Icon(
-                    imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint               = textPrimary(dark),
-                    modifier           = Modifier.size(22.dp),
+                    tint = textPrimary(dark),
+                    modifier = Modifier.size(22.dp),
                 )
             }
 
             // Title (centered)
             Text(
-                text     = if (isNew) "New diary" else "Edit diary",
-                style    = TextStyle(
+                text = if (isNew) "New diary" else "Edit diary",
+                style = TextStyle(
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize   = 17.sp,
+                    fontSize = 17.sp,
                 ),
-                color    = textPrimary(dark),
+                color = textPrimary(dark),
                 modifier = Modifier.weight(1f),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
 
             // Save button
-            Box(modifier = Modifier.width(64.dp), contentAlignment = Alignment.CenterEnd) {
+            Box(
+                modifier = Modifier.width(64.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
                 if (isSaving) {
                     CircularProgressIndicator(
-                        modifier  = Modifier.size(20.dp),
-                        color     = textPrimary(dark),
+                        modifier = Modifier.size(20.dp),
+                        color = textPrimary(dark),
                         strokeWidth = 2.dp,
                     )
                 } else {
                     TextButton(onClick = onSave) {
                         Text(
-                            text  = "Save",
+                            text = "Save",
                             style = TextStyle(
                                 fontFamily = InterFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize   = 15.sp,
+                                fontSize = 15.sp,
                             ),
                             color = textPrimary(dark),
                         )
@@ -391,18 +412,18 @@ private fun DiaryDetailTopBar(
 
 @Composable
 private fun DiaryBottomToolbar(
-    dark             : Boolean,
-    wordCount        : Int,
+    dark: Boolean,
+    wordCount: Int,
     isLoadingLocation: Boolean,
-    onImageClick     : () -> Unit,
-    onLocationClick  : () -> Unit,
-    onTtsClick       : () -> Unit,
+    onImageClick: () -> Unit,
+    onLocationClick: () -> Unit,
+    onTtsClick: () -> Unit,
 ) {
     Column {
         HorizontalDivider(
-            color     = borderColor(dark),
+            color = borderColor(dark),
             thickness = 1.dp,
-            modifier  = Modifier.padding(horizontal = 0.dp),
+            modifier = Modifier.padding(horizontal = 0.dp),
         )
         Row(
             modifier = Modifier
@@ -414,23 +435,23 @@ private fun DiaryBottomToolbar(
             // ── Image picker icon ──────────────────────────────────────────
             IconButton(onClick = onImageClick) {
                 Icon(
-                    painter            = painterResource(android.R.drawable.ic_menu_gallery),
+                    painter = painterResource(android.R.drawable.ic_menu_gallery),
                     contentDescription = "Add image",
-                    tint               = toolbarIconTint(dark),
-                    modifier           = Modifier.size(24.dp),
+                    tint = toolbarIconTint(dark),
+                    modifier = Modifier.size(24.dp),
                 )
             }
 
             // ── TTS icon (disabled) ────────────────────────────────────────
             IconButton(
-                onClick  = onTtsClick,
-                enabled  = false,           // implement later
+                onClick = onTtsClick,
+                enabled = false,           // implement later
             ) {
                 Icon(
-                    imageVector        = Icons.Default.PlayArrow,
+                    imageVector = Icons.Default.PlayArrow,
                     contentDescription = "Text to speech (coming soon)",
-                    tint               = toolbarIconTint(dark).copy(alpha = 0.3f),
-                    modifier           = Modifier.size(24.dp),
+                    tint = toolbarIconTint(dark).copy(alpha = 0.3f),
+                    modifier = Modifier.size(24.dp),
                 )
             }
 
@@ -438,16 +459,16 @@ private fun DiaryBottomToolbar(
             IconButton(onClick = onLocationClick) {
                 if (isLoadingLocation) {
                     CircularProgressIndicator(
-                        modifier  = Modifier.size(20.dp),
-                        color     = toolbarIconTint(dark),
+                        modifier = Modifier.size(20.dp),
+                        color = toolbarIconTint(dark),
                         strokeWidth = 2.dp,
                     )
                 } else {
                     Icon(
-                        imageVector        = Icons.Default.LocationOn,
+                        imageVector = Icons.Default.LocationOn,
                         contentDescription = "Insert location",
-                        tint               = toolbarIconTint(dark),
-                        modifier           = Modifier.size(24.dp),
+                        tint = toolbarIconTint(dark),
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
@@ -456,11 +477,11 @@ private fun DiaryBottomToolbar(
 
             // ── Word count ─────────────────────────────────────────────────
             Text(
-                text  = "$wordCount word${if (wordCount == 1) "" else "s"}",
+                text = "$wordCount word${if (wordCount == 1) "" else "s"}",
                 style = TextStyle(
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.Medium,
-                    fontSize   = 12.sp,
+                    fontSize = 12.sp,
                 ),
                 color = textMuted(dark),
             )
@@ -472,15 +493,15 @@ private fun DiaryBottomToolbar(
 
 @Composable
 private fun DiaryImageThumbnail(
-    uri     : Uri,
+    uri: Uri,
     onRemove: () -> Unit,
 ) {
     Box(modifier = Modifier.size(96.dp)) {
         AsyncImage(
-            model             = uri,
+            model = uri,
             contentDescription = null,
-            contentScale      = ContentScale.Crop,
-            modifier          = Modifier
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(10.dp)),
         )
@@ -496,10 +517,10 @@ private fun DiaryImageThumbnail(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector        = Icons.Default.Close,
+                imageVector = Icons.Default.Close,
                 contentDescription = "Remove image",
-                tint               = Color.White,
-                modifier           = Modifier.size(12.dp),
+                tint = Color.White,
+                modifier = Modifier.size(12.dp),
             )
         }
     }
