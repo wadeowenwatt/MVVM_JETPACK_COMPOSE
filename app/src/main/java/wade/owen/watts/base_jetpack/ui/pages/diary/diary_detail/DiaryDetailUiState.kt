@@ -22,4 +22,8 @@ data class DiaryDetailUiState(
     // ── Delete features ─────────────────────────────────────────────────────────
     val isDeletingEntry: Boolean = false,      // loading state during deletion
     val showDeleteConfirmDialog: Boolean = false, // confirmation before delete
+    // ── Validation & Save features ───────────────────────────────────────────
+    val validationError: String? = null,       // validation error message
+    val isSavingDraft: Boolean = false,        // auto-save in progress
+    val draftSavedIndicator: String? = null,   // "Draft saved" message
 ) : UiState

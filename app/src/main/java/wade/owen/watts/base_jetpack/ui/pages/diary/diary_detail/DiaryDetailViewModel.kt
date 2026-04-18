@@ -36,11 +36,20 @@ class DiaryDetailViewModel @Inject constructor(
 ) : BaseViewModel<DiaryDetailUiState, DiaryDetailEvent>(
     initialState = DiaryDetailUiState()
 ) {
+    private var autoSaveJob: kotlinx.coroutines.Job? = null
+    private var lastSavedContent: Pair<String, String>? = null  // (title, content)
+
     init {
         val diaryId: Int? = savedStateHandle.get<Int>("diary_id")
         if (diaryId != null && diaryId != -1) {
             loadDiary(diaryId)
         }
+        startAutoSave()
+    }
+
+    override fun onCleared() {
+        autoSaveJob?.cancel()
+        super.onCleared()
     }
 
     // ── Load ──────────────────────────────────────────────────────────────────
@@ -174,7 +183,91 @@ class DiaryDetailViewModel @Inject constructor(
         // TODO: implement Text-to-Speech
     }
 
-    // ── Save / Discard ────────────────────────────────────────────────────────
+    // ── Validation ────────────────────────────────────────────────────────────
+
+    companion object {
+        private const val TITLE_MIN_CHARS = 1
+        private const val TITLE_MAX_CHARS = 200
+        private const val CONTENT_CHAR_WARNING = 5000
+    }
+
+    fun validateEntry(): Boolean {
+        val s = state.value
+
+        // Title validation: required, min 1 char, max 200 chars
+        if (s.title.isBlank()) {
+            setState { copy(validationError = "Title is required") }
+            return false
+        }
+
+        if (s.title.length < TITLE_MIN_CHARS) {
+            setState { copy(validationError = "Title must be at least $TITLE_MIN_CHARS character") }
+            return false
+        }
+
+        if (s.title.length > TITLE_MAX_CHARS) {
+            setState { copy(validationError = "Title cannot exceed $TITLE_MAX_CHARS characters (current: ${s.title.length})" ) }
+            return false
+        }
+
+        // Clear validation error on success
+        setState { copy(validationError = null) }
+        return true
+    }
+
+    fun getValidationError(): String? = state.value.validationError
+
+    fun clearValidationError() {
+        setState { copy(validationError = null) }
+    }
+
+    // ── Auto-Save (Optional Enhancement) ──────────────────────────────────────
+
+    private fun startAutoSave() {
+        autoSaveJob?.cancel()
+        autoSaveJob = viewModelScope.launch {
+            while (true) {
+                delay(30000) // Auto-save every 30 seconds
+                val s = state.value
+                val currentContent = Pair(s.title, s.content)
+
+                // Only save if content changed and is not empty
+                if (currentContent != lastSavedContent && (s.title.isNotEmpty() || s.content.isNotEmpty())) {
+                    autoSaveDraft()
+                }
+            }
+        }
+    }
+
+    private suspend fun autoSaveDraft() {
+        setState { copy(isSavingDraft = true) }
+        val s = state.value
+        try {
+            // Only auto-save if it's an existing entry or has meaningful content
+            if (s.originalDiary != null && (s.title != s.originalDiary.title || s.content != s.originalDiary.content)) {
+                withContext(Dispatchers.IO) {
+                    diaryRepository.updateDiary(
+                        s.originalDiary.copy(
+                            title = s.title,
+                            content = s.content,
+                            updatedDate = Date(),
+                        )
+                    )
+                }
+                lastSavedContent = Pair(s.title, s.content)
+                setState { copy(draftSavedIndicator = "Draft saved", isSavingDraft = false) }
+
+                // Clear the indicator after 2 seconds
+                delay(2000)
+                setState { copy(draftSavedIndicator = null) }
+            } else {
+                setState { copy(isSavingDraft = false) }
+            }
+        } catch (e: Exception) {
+            Log.e("DiaryDetailVM", "autoSaveDraft failed", e)
+            setState { copy(isSavingDraft = false) }
+        }
+    }
 
     fun checkChangesAndDismiss() {
         val s = state.value
@@ -196,8 +289,14 @@ class DiaryDetailViewModel @Inject constructor(
     }
 
     fun saveDiary() {
+        // Validate before saving
+        if (!validateEntry()) {
+            sendEvent(DiaryDetailEvent.ValidationError(getValidationError() ?: "Validation failed"))
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
-            setState { copy(loadStatus = LoadStatus.LOADING) }
+            setState { copy(loadStatus = LoadStatus.LOADING, isSavingDraft = true) }
             val s = state.value
             try {
                 if (s.originalDiary != null) {
@@ -218,11 +317,12 @@ class DiaryDetailViewModel @Inject constructor(
                         )
                     )
                 }
-                setState { copy(loadStatus = LoadStatus.SUCCESS) }
+                setState { copy(loadStatus = LoadStatus.SUCCESS, isSavingDraft = false) }
+                sendEvent(DiaryDetailEvent.SaveSuccess)
                 sendEvent(DiaryDetailEvent.NavigateBack)
             } catch (e: Exception) {
                 Log.e("DiaryDetailVM", "saveDiary failed", e)
-                setState { copy(loadStatus = LoadStatus.FAILURE) }
+                setState { copy(loadStatus = LoadStatus.FAILURE, isSavingDraft = false) }
                 sendEvent(DiaryDetailEvent.DiaryDetailError("Save diary failed"))
             }
         }

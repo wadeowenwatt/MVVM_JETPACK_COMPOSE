@@ -127,7 +127,12 @@ fun DiaryDetailPage(
                 is DiaryDetailEvent.DiaryDetailError -> snackbar.showSnackbar(
                     event.message
                 )
-
+                is DiaryDetailEvent.ValidationError -> snackbar.showSnackbar(
+                    event.message
+                )
+                is DiaryDetailEvent.SaveSuccess -> snackbar.showSnackbar(
+                    "Entry saved successfully"
+                )
                 is DiaryDetailEvent.LocationInserted -> snackbar.showSnackbar("📍 ${event.address}")
                 is DiaryDetailEvent.ImagePicked -> { /* handled via addImage */
                 }
@@ -190,6 +195,8 @@ fun DiaryDetailPage(
                 isViewMode = uiState.isViewMode,
                 isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
                 isDeleting = uiState.isDeletingEntry,
+                isSavingDraft = uiState.isSavingDraft,
+                draftSavedIndicator = uiState.draftSavedIndicator,
                 title = uiState.title,
                 content = uiState.content,
                 onBack = { viewModel.checkChangesAndDismiss() },
@@ -276,7 +283,12 @@ fun DiaryDetailPage(
             // ── Title ─────────────────────────────────────────────────────────
             androidx.compose.foundation.text.BasicTextField(
                 value = uiState.title,
-                onValueChange = { if (!uiState.isViewMode) viewModel.updateTitle(it) },
+                onValueChange = {
+                    if (!uiState.isViewMode) {
+                        viewModel.updateTitle(it)
+                        viewModel.clearValidationError()  // Clear error on edit
+                    }
+                },
                 enabled = !uiState.isViewMode,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -300,6 +312,16 @@ fun DiaryDetailPage(
                     inner()
                 },
             )
+
+            // ── Validation error message ──────────────────────────────────────
+            if (uiState.validationError != null) {
+                Text(
+                    text = uiState.validationError!!,
+                    style = ty.labelSmall,
+                    color = cs.error,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+            }
 
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(
@@ -379,7 +401,10 @@ fun DiaryDetailPage(
             // ── Bottom toolbar ────────────────────────────────────────────────
             DiaryBottomToolbar(
                 wordCount = uiState.wordCount,
+                charCount = uiState.content.length,
                 isLoadingLocation = uiState.isLoadingLocation,
+                isSavingDraft = uiState.isSavingDraft,
+                draftSavedIndicator = uiState.draftSavedIndicator,
                 onImageClick = { imageLauncher.launch("image/*") },
                 onLocationClick = {
                     if (locationPerms.allPermissionsGranted) {
@@ -426,6 +451,8 @@ private fun DiaryDetailTopBar(
     isViewMode: Boolean,
     isSaving: Boolean,
     isDeleting: Boolean,
+    isSavingDraft: Boolean,
+    draftSavedIndicator: String?,
     title: String,
     content: String,
     onBack: () -> Unit,
@@ -459,13 +486,25 @@ private fun DiaryDetailTopBar(
             }
 
             // Title (centered)
-            Text(
-                text = if (isNew) "New diary" else "Edit diary",
-                style = ty.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = cs.onBackground,
+            Column(
                 modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-            )
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (isNew) "New diary" else "Edit diary",
+                    style = ty.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = cs.onBackground,
+                    textAlign = TextAlign.Center,
+                )
+                // Show draft saved indicator
+                if (draftSavedIndicator != null) {
+                    Text(
+                        text = draftSavedIndicator,
+                        style = ty.labelSmall,
+                        color = cs.onSurfaceVariant,
+                    )
+                }
+            }
 
             // Action buttons (share/copy/delete when viewing, save otherwise)
             if (isViewMode) {
@@ -514,14 +553,14 @@ private fun DiaryDetailTopBar(
                     strokeWidth = 2.dp,
                 )
             } else {
-                TextButton(onClick = onSave) {
+                TextButton(onClick = onSave, enabled = title.isNotEmpty()) {
                     Text(
                         text = "Save",
                         style = ty.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                         ),
-                        color = cs.onBackground,
+                        color = if (title.isNotEmpty()) cs.onBackground else cs.onSurfaceVariant.copy(alpha = 0.5f),
                     )
                 }
             }
@@ -536,15 +575,43 @@ private fun DiaryDetailTopBar(
 @Composable
 private fun DiaryBottomToolbar(
     wordCount: Int,
+    charCount: Int,
     isLoadingLocation: Boolean,
+    isSavingDraft: Boolean,
+    draftSavedIndicator: String?,
     onImageClick: () -> Unit,
     onLocationClick: () -> Unit,
     onTtsClick: () -> Unit,
 ) {
     val cs = MaterialTheme.colorScheme
     val ty = MaterialTheme.typography
+    val contentCharWarning = 5000
+    val showCharWarning = charCount > contentCharWarning
 
     Column {
+        // Show char count warning if needed
+        if (showCharWarning) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(cs.errorContainer)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Character limit warning",
+                    style = ty.labelSmall,
+                    color = cs.onErrorContainer,
+                )
+                Text(
+                    text = "$charCount / $contentCharWarning",
+                    style = ty.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = cs.onErrorContainer,
+                )
+            }
+        }
+
         HorizontalDivider(
             color = cs.outline,
             thickness = 1.dp,
@@ -598,6 +665,26 @@ private fun DiaryBottomToolbar(
             }
 
             Spacer(Modifier.weight(1f))
+
+            // ── Draft saving indicator ──────────────────────────────────────
+            if (isSavingDraft) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        color = cs.onSurfaceVariant,
+                        strokeWidth = 1.5.dp,
+                    )
+                    Text(
+                        text = "Saving draft...",
+                        style = ty.labelSmall,
+                        color = cs.onSurfaceVariant,
+                    )
+                }
+            }
 
             // ── Word count ─────────────────────────────────────────────────
             Text(

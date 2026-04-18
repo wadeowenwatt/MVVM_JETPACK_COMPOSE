@@ -11,4 +11,6 @@ sealed class DiaryDetailEvent : UiEvent {
     data class ShareDiary(val title: String, val content: String) : DiaryDetailEvent()
     object DiaryDeleted : DiaryDetailEvent()
     data class ShowUndoSnackbar(val message: String) : DiaryDetailEvent()
+    data class ValidationError(val message: String) : DiaryDetailEvent()
+    object SaveSuccess : DiaryDetailEvent()
 }
