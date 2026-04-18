@@ -6,6 +6,8 @@
 package wade.owen.watts.base_jetpack.ui.pages.diary.diary_detail
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,6 +36,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
@@ -171,6 +175,8 @@ fun DiaryDetailPage(
                 isNew = isNew,
                 isViewMode = uiState.isViewMode,
                 isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
+                title = uiState.title,
+                content = uiState.content,
                 onBack = { viewModel.checkChangesAndDismiss() },
                 onSave = { viewModel.saveDiary() },
                 onShare = {
@@ -181,6 +187,11 @@ fun DiaryDetailPage(
                         type = "text/plain"
                     }
                     context.startActivity(Intent.createChooser(intent, "Share diary entry"))
+                },
+                onCopied = {
+                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("diary_entry", "${uiState.title}\n\n${uiState.content}")
+                    clipboard.setPrimaryClip(clip)
                 }
             )
         },
@@ -206,6 +217,45 @@ fun DiaryDetailPage(
                     vertical = 24.dp
                 ),
             )
+
+            // ── Timestamps (shown in view mode) ────────────────────────────────
+            val originalDiary = uiState.originalDiary
+            if (uiState.isViewMode && originalDiary != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Created",
+                            style = ty.labelSmall,
+                            color = cs.onSurfaceVariant,
+                        )
+                        Text(
+                            text = SimpleDateFormat("MMM d, yyyy HH:mm", Locale.getDefault())
+                                .format(originalDiary.createdDate),
+                            style = ty.bodySmall,
+                            color = cs.onBackground,
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Updated",
+                            style = ty.labelSmall,
+                            color = cs.onSurfaceVariant,
+                        )
+                        Text(
+                            text = SimpleDateFormat("MMM d, yyyy HH:mm", Locale.getDefault())
+                                .format(originalDiary.updatedDate),
+                            style = ty.bodySmall,
+                            color = cs.onBackground,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
 
             // ── Title ─────────────────────────────────────────────────────────
             androidx.compose.foundation.text.BasicTextField(
@@ -244,31 +294,52 @@ fun DiaryDetailPage(
             Spacer(Modifier.height(12.dp))
 
             // ── Rich Text Editor ──────────────────────────────────────────────
-            RichTextEditor(
-                state = richState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-                    .height(320.dp),
-                placeholder = {
+            if (uiState.isViewMode) {
+                // Read-only content display in view mode
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(cs.surfaceVariant.copy(alpha = 0.3f))
+                        .padding(16.dp)
+                ) {
                     Text(
-                        text = "How was your day?",
+                        text = if (uiState.content.isNotEmpty()) uiState.content else "No content",
                         style = ty.bodyLarge.copy(
                             lineHeight = 26.sp,
-                            color = cs.onSurfaceVariant.copy(alpha = 0.5f),
+                            color = if (uiState.content.isNotEmpty()) cs.onBackground else cs.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     )
-                },
-                textStyle = ty.bodyLarge.copy(
-                    lineHeight = 26.sp,
-                    color = cs.onBackground,
-                ),
-                colors = RichTextEditorDefaults.richTextEditorColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                ),
-            )
+                }
+            } else {
+                // Editable RichTextEditor in edit mode
+                RichTextEditor(
+                    state = richState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .height(320.dp),
+                    placeholder = {
+                        Text(
+                            text = "How was your day?",
+                            style = ty.bodyLarge.copy(
+                                lineHeight = 26.sp,
+                                color = cs.onSurfaceVariant.copy(alpha = 0.5f),
+                            )
+                        )
+                    },
+                    textStyle = ty.bodyLarge.copy(
+                        lineHeight = 26.sp,
+                        color = cs.onBackground,
+                    ),
+                    colors = RichTextEditorDefaults.richTextEditorColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    ),
+                )
+            }
 
             // ── Selected images strip ─────────────────────────────────────────
             if (uiState.imageUris.isNotEmpty()) {
@@ -326,9 +397,12 @@ private fun DiaryDetailTopBar(
     isNew: Boolean,
     isViewMode: Boolean,
     isSaving: Boolean,
+    title: String,
+    content: String,
     onBack: () -> Unit,
     onSave: () -> Unit,
     onShare: () -> Unit,
+    onCopied: () -> Unit,
 ) {
     val cs = MaterialTheme.colorScheme
     val ty = MaterialTheme.typography
@@ -363,37 +437,46 @@ private fun DiaryDetailTopBar(
                 textAlign = TextAlign.Center,
             )
 
-            // Action buttons (share when viewing, save otherwise)
-            Box(
-                modifier = Modifier.width(64.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                if (isViewMode) {
-                    IconButton(onClick = onShare) {
+            // Action buttons (share/copy/delete when viewing, save otherwise)
+            if (isViewMode) {
+                Row(
+                    modifier = Modifier.width(120.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onCopied, modifier = Modifier.size(40.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Copy",
+                            tint = cs.onBackground,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                    IconButton(onClick = onShare, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share",
                             tint = cs.onBackground,
-                            modifier = Modifier.size(22.dp),
+                            modifier = Modifier.size(20.dp),
                         )
                     }
-                } else if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                }
+            } else if (isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = cs.onBackground,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                TextButton(onClick = onSave) {
+                    Text(
+                        text = "Save",
+                        style = ty.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                        ),
                         color = cs.onBackground,
-                        strokeWidth = 2.dp,
                     )
-                } else {
-                    TextButton(onClick = onSave) {
-                        Text(
-                            text = "Save",
-                            style = ty.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                            ),
-                            color = cs.onBackground,
-                        )
-                    }
                 }
             }
         }
