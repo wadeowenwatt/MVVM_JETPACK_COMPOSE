@@ -17,4 +17,6 @@ data class DiaryDetailUiState(
     val locationText: String? = null,          // địa chỉ sau khi reverse-geocode
     val isLoadingLocation: Boolean = false,    // đang fetch GPS
     val wordCount: Int = 0,                    // đếm số từ realtime
+    val isViewMode: Boolean = false,           // true when viewing existing entry
+    val shareText: String = "",                // formatted text for sharing
 ) : UiState

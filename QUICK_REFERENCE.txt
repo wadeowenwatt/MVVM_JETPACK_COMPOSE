@@ -1,0 +1,438 @@
+================================================================================
+JETPACK COMPOSE DIARY APP - PARALLEL IMPLEMENTATION QUICK REFERENCE
+================================================================================
+
+PROJECT STRUCTURE
+================================================================================
+
+Base Path: /Users/wadetran/Documents/src/jetpack_compose_mvvm/app/src/main/java/wade/owen/watts/base_jetpack/
+
+Core Layer
+  core/viewmodel/
+    - BaseViewModel.kt      (Abstract base for all ViewModels)
+  
+  router/
+    - RootNavHost.kt        (Main navigation - diary_detail route defined)
+    - BottomNavGraph.kt     (Tab navigation - Diary, Calendar, Quotes, Settings)
+
+  designsystem/
+    - AppButton.kt          (Reusable button component)
+    - AppHeader.kt          (Reusable header)
+    - AppDialog.kt          (Reusable dialog - used for delete confirmation)
+
+Domain Layer
+  domain/
+    entities/
+      - Diary.kt            (Data class with id, title, content, dates)
+    repository/
+      - DiaryRepository.kt  (Interface: getDiaries, getDiaryById, insert, update, delete)
+
+Data Layer
+  data/
+    local/                  (Room DAOs, AppDatabase)
+    remote/                 (Retrofit API)
+    repository/             (Repository implementations - fully wired)
+
+UI Layer
+  ui/pages/
+    diary/
+      - DiaryPage.kt        (Home list screen - 90% complete)
+      - DiaryViewModel.kt   (List logic - fully implemented)
+      - DiaryUiState.kt     (List state model)
+      - DiaryUiEvent.kt     (List events)
+      
+      diary_detail/
+        - DiaryDetailPage.kt        (Form/view screen - 70% complete)
+        - DiaryDetailViewModel.kt   (Form logic - 70% complete)
+        - DiaryDetailUiState.kt     (Form state)
+        - DiaryDetailEvent.kt       (Form events)
+    
+    calendar/
+      - CalendarPage.kt     (Calendar UI - 30% complete, no data)
+      (CalendarViewModel, CalendarUiState, CalendarUiEvent needed)
+    
+    setting/
+      - SettingPage.kt      (100% complete)
+    
+    quote_page/
+      - QuotePage.kt        (100% complete)
+  
+  theme/
+    - Theme.kt              (Material 3 colors and typography configured)
+    - Color.kt
+    - Type.kt
+
+================================================================================
+TRACK 1: HOME & ENTRY DETAIL (Senior Dev A) - 5 Days
+================================================================================
+
+FILES TO MODIFY (7 total):
+
+  1. /core/router/RootNavHost.kt
+     - Add transition animations
+     - Current: Routes defined, animations missing
+
+  2. /ui/pages/diary/DiaryPage.kt
+     - Add pull-to-refresh
+     - Add sorting UI (sort menu button in top bar)
+     - Add filtering UI (filter button in top bar)
+     - Add pagination UI
+     - Current: Has search, list, FAB, delete dialog
+
+  3. /ui/pages/diary/DiaryViewModel.kt
+     - Add refresh() method
+     - Add setSortOrder() method
+     - Add setFilter() method
+     - Add loadMore() method for pagination
+     - Current: Has observeListDiary, search, delete
+
+  4. /ui/pages/diary/DiaryUiState.kt
+     - Add sortOrder: SortOrder field
+     - Add filterStartDate: Date? field
+     - Add filterEndDate: Date? field
+     - Add isRefreshing: Boolean field
+     - Add hasMore: Boolean field for pagination
+     - Current: Has diaries, search, delete state
+
+  5. /ui/pages/diary/diary_detail/DiaryDetailPage.kt
+     - Add back button in header (back navigation)
+     - Add view-only mode UI (hide edit controls)
+     - Add timestamps display (created/updated)
+     - Add share button
+     - Add copy button
+     - Current: Has rich editor, images, location
+
+  6. /ui/pages/diary/diary_detail/DiaryDetailUiState.kt
+     - Add isViewOnly: Boolean field
+     - Add showEditButton: Boolean field
+     - Current: Has title, content, images, location
+
+  7. /ui/pages/diary/diary_detail/DiaryDetailEvent.kt
+     - Add DeleteSuccess event
+     - Add DeleteError event
+     - Current: Already has some events
+
+REFERENCE CODE IN CODEBASE:
+
+  Dialog pattern (already works):
+    /ui/pages/diary/DiaryPage.kt lines 147-156
+    Shows delete confirmation dialog
+
+  Navigation pattern (already works):
+    /ui/pages/diary/DiaryPage.kt lines 92-94
+    FAB navigates to new entry: navController.navigate(RootDestination.createDiaryDetailRoute())
+
+  ViewModel pattern (must follow):
+    /ui/pages/diary/DiaryViewModel.kt
+    Extends: BaseViewModel<DiaryUiState, DiaryUiEvent>
+    Uses: setState { copy(...) } for updates
+    Uses: sendEvent(event) for user feedback
+
+================================================================================
+TRACK 2: FORM & CALENDAR (Senior Dev B) - 7 Days
+================================================================================
+
+FILES TO CREATE (4 new files):
+
+  1. /ui/pages/calendar/CalendarViewModel.kt (NEW)
+     - Extend BaseViewModel<CalendarUiState, CalendarUiEvent>
+     - Constructor: inject DiaryRepository
+     - init { loadDiariesForMonth(today) }
+     - Methods: nextMonth(), previousMonth(), selectDate(date)
+
+  2. /ui/pages/calendar/CalendarUiState.kt (NEW)
+     - currentMonth: YearMonth
+     - diaryDates: Set<LocalDate>  (dates with entries)
+     - selectedDate: LocalDate?
+     - loadStatus: LoadStatus
+     - diaryEntriesForDay: List<Diary>
+     - Implements: UiState
+
+  3. /ui/pages/calendar/CalendarUiEvent.kt (NEW)
+     - NavigateToEntry(entryId: Int)
+     - NavigateToCreateEntry(date: LocalDate)
+     - LoadError(message: String)
+     - Implements: UiEvent
+
+  4. /ui/pages/calendar/components/CalendarDayIndicator.kt (NEW)
+     - Composable function
+     - Show dot on dates with entries
+     - Show count badge if multiple entries
+     - Highlight if selected
+
+FILES TO MODIFY (5 files):
+
+  1. /ui/pages/calendar/CalendarPage.kt
+     - Inject CalendarViewModel
+     - Collect state and events
+     - Use state to populate calendar grid
+     - Add click handlers for dates
+     - Add long-press for new entry
+     - Current: Has UI skeleton only
+
+  2. /ui/pages/diary/diary_detail/DiaryDetailPage.kt
+     - Add form validation UI
+     - Show validation error messages
+     - Add save button with loading state
+     - Show save success/error feedback
+     - Current: Has form fields, missing validation
+
+  3. /ui/pages/diary/diary_detail/DiaryDetailViewModel.kt
+     - Add saveDiary() method
+     - Add validation logic
+     - Handle insert vs update
+     - Handle loading state
+     - Current: Has load, update, but no save flow
+
+  4. /ui/pages/diary/diary_detail/DiaryDetailUiState.kt
+     - Add validationErrors: Map<String, String> field
+     - Add isSaving: Boolean field
+     - Current: Has title, content, images
+
+  5. /ui/pages/diary/diary_detail/DiaryDetailEvent.kt
+     - Add SaveSuccess event
+     - Add SaveError(message: String) event
+     - Add ValidationError(errors: Map) event
+     - Current: Has some events
+
+REFERENCE CODE IN CODEBASE:
+
+  ViewModel pattern (must follow):
+    /ui/pages/diary/diary_detail/DiaryDetailViewModel.kt
+    Extends: BaseViewModel<DiaryDetailUiState, DiaryDetailEvent>
+    Example init block:
+      init {
+          val diaryId: Int? = savedStateHandle.get<Int>("diary_id")
+          if (diaryId != null && diaryId != -1) {
+              loadDiary(diaryId)
+          }
+      }
+
+  Repository usage pattern:
+    diaryRepository.getDiaryById(id).collect { diary -> ... }
+    diaryRepository.getDiaries(limit, offset).collect { diaries -> ... }
+
+  State update pattern:
+    setState { copy(field1 = value1, field2 = value2) }
+
+  Event pattern:
+    sendEvent(DiaryDetailEvent.SaveSuccess)
+
+  Error handling:
+    .catch { 
+        Log.e(TAG, "Error", it)
+        sendEvent(DiaryDetailEvent.SaveError(it.message ?: "Unknown error"))
+    }
+
+================================================================================
+SHARED PATTERNS - MUST FOLLOW EXACTLY
+================================================================================
+
+1. STATE MANAGEMENT
+   - All UI state extends UiState interface
+   - Use data classes with copy() for immutability
+   - Computed properties allowed (val filteredDiaries: List = ...)
+   - Example:
+     data class MyUiState(
+         val items: List<Item> = emptyList(),
+         val selectedId: Int? = null,
+         val loadStatus: LoadStatus = LoadStatus.INITIAL
+     ) : UiState
+
+2. VIEWMODEL PATTERN
+   - Extend BaseViewModel<UiState, UiEvent>
+   - Use setState { copy(...) } to update state
+   - Use sendEvent(event) to send user feedback
+   - All async work in viewModelScope.launch
+   - Use Dispatchers.IO for DB/network
+   - Catch exceptions and send error events
+   - Example:
+     @HiltViewModel
+     class MyViewModel @Inject constructor(
+         private val repo: MyRepository
+     ) : BaseViewModel<MyUiState, MyUiEvent>(MyUiState()) {
+         fun doSomething() {
+             viewModelScope.launch(Dispatchers.IO) {
+                 repo.getData().collect { data ->
+                     setState { copy(items = data) }
+                 }
+             }
+         }
+     }
+
+3. COMPOSABLE PATTERN
+   - Inject ViewModel with @hiltViewModel()
+   - Collect state with collectAsState()
+   - Observe events with LaunchedEffect
+   - Example:
+     @Composable
+     fun MyPage(viewModel: MyViewModel = hiltViewModel()) {
+         val state by viewModel.state.collectAsState()
+         LaunchedEffect(Unit) {
+             viewModel.event.collect { event ->
+                 when (event) {
+                     is MyEvent.Success -> showSuccess()
+                     is MyEvent.Error -> showError(event.msg)
+                 }
+             }
+         }
+         MyContent(state)
+     }
+
+4. NAVIGATION PATTERN
+   - Use RootDestination.createRoute() helpers
+   - Keep navigation simple (no complex params)
+   - Use SavedStateHandle for ID params
+   - Example:
+     navController.navigate(RootDestination.createDiaryDetailRoute(diaryId))
+
+5. ERROR HANDLING
+   - Always use .catch { } blocks
+   - Log errors with Log.e(TAG, "message", exception)
+   - Send error events to UI
+   - Show snackbars/dialogs to users
+   - Never crash silently
+
+6. MATERIAL 3 COMPONENTS
+   - Use Material 3 components:
+     * MaterialTheme.colorScheme (colors)
+     * MaterialTheme.typography (fonts)
+     * Material3 composables (Button, Card, etc.)
+   - Use theme colors:
+     * cs.background, cs.surface, cs.onBackground, etc.
+   - Example:
+     Text(
+         text = "Hello",
+         style = MaterialTheme.typography.titleMedium,
+         color = MaterialTheme.colorScheme.onSurface
+     )
+
+================================================================================
+KEY CLASSES & INTERFACES TO UNDERSTAND
+================================================================================
+
+BaseViewModel<S : UiState, E : UiEvent>
+  - Protected: setState(reducer: S.() -> S)
+  - Protected: sendEvent(event: E)
+  - Public: state: StateFlow<S>
+  - Public: event: SharedFlow<E>
+
+LoadStatus (enum)
+  - INITIAL, LOADING, SUCCESS, FAILURE
+
+Diary (data class)
+  - id: Int
+  - title: String
+  - content: String
+  - createdDate: Date
+  - updatedDate: Date
+
+DiaryRepository (interface)
+  - getDiaries(limit, offset): Flow<List<Diary>>
+  - getDiaryById(id): Flow<Diary>
+  - getDiaryByDate(date): Flow<Diary>
+  - insertDiary(diary): suspend
+  - updateDiary(diary): suspend
+  - deleteDiary(diary): suspend
+
+================================================================================
+BUILD & TEST COMMANDS
+================================================================================
+
+./gradlew clean build              # Full build
+./gradlew test                     # Unit tests (app/src/test/)
+./gradlew connectedAndroidTest     # Instrumented tests (requires emulator/device)
+./gradlew lint                     # Code quality checks
+./gradlew kspDebugKotlin           # Re-run code generation (Moshi, Room)
+
+================================================================================
+TIMELINE
+================================================================================
+
+Track 1 (Home & Entry Detail):
+  Days 1-2: Navigation & transitions
+  Days 2-3: Home enhancements (refresh, sort, filter, pagination)
+  Days 3-4: View-only mode, timestamps, share, copy
+  Day 4:   Delete improvements (undo, loading, errors)
+  Day 5:   Testing & quality assurance
+
+Track 2 (Calendar & Form):
+  Days 1-2: Calendar ViewModel, state, events
+  Days 2-3: Data loading, month navigation
+  Days 3-4: UI integration, indicators, date selection
+  Day 4:   Calendar navigation flow
+  Days 4-5: Form validation & save workflow
+  Days 5-6: Draft saving, enhancements (optional)
+  Day 7:   Testing & quality assurance
+
+Final Days:
+  Merge both tracks
+  Integration testing
+  Performance optimization
+  Release preparation
+
+================================================================================
+DAILY STANDUP CHECKLIST
+================================================================================
+
+10 AM Standup:
+  [ ] What did you complete yesterday?
+  [ ] What are you working on today?
+  [ ] Any blockers? (ask team for help)
+  [ ] Any conflicts with the other track?
+
+3 PM Integration Check:
+  [ ] Did you pull latest main? (daily to avoid conflicts)
+  [ ] Does your code compile?
+  [ ] Run: ./gradlew lint
+  [ ] Run: ./gradlew test
+  [ ] Did you test cross-feature navigation?
+  [ ] Material 3 colors consistent?
+
+Weekly (Friday):
+  [ ] Feature demo to team
+  [ ] Code review by peer
+  [ ] Plan for next week
+  [ ] Update shared documentation
+
+================================================================================
+ABSOLUTE MUST-DOS
+================================================================================
+
+1. Follow BaseViewModel pattern - do NOT deviate
+2. Follow state management pattern - use setState { copy(...) }
+3. Use Material 3 colors from theme - do NOT hardcode colors
+4. Add error handling to all async operations
+5. Show user feedback for all async operations (loading, success, error)
+6. Test on devices API 26+ (minimum SDK)
+7. Run lint before committing
+8. Run unit tests before creating PR
+9. Update CLAUDE.md if changing architecture
+10. Communicate daily with other track
+
+================================================================================
+GETTING HELP
+================================================================================
+
+Architecture Questions:
+  - Read: /CLAUDE.md (in repo)
+  - Read: /.claude/docs/architectural_patterns.md
+  - Ask: Tech lead / other developer
+
+API Questions:
+  - Read: Kotlin docs
+  - Read: Jetpack Compose docs (developer.android.com)
+  - Read: Material 3 docs (m3.material.io)
+  - Google: "Jetpack Compose [question]"
+
+Code Questions:
+  - Look at existing implementations (DiaryPage, QuoteViewModel, etc.)
+  - Use Cmd+B in Android Studio to jump to definitions
+  - Check similar feature implementations
+
+Merge/Git Questions:
+  - Communicate with other developer immediately
+  - Keep branches fresh (git fetch daily)
+  - Resolve conflicts manually, don't force push
+
+================================================================================

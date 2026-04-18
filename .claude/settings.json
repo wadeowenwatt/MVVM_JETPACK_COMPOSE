@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Write(ui/pages/calendar/*.kt)",
+      "Write(ui/pages/diary_detail/*.kt)",
+      "Bash(./gradlew *)",
+      "Bash(git *)"
+    ]
+  }
+}

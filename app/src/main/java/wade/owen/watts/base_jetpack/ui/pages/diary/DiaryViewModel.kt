@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import wade.owen.watts.base_jetpack.core.viewmodel.BaseViewModel
@@ -74,5 +75,24 @@ class DiaryViewModel @Inject constructor(
 
     fun updateSearchQuery(query: String) {
         setState { copy(searchQuery = query) }
+    }
+
+    fun refreshDiaries() {
+        viewModelScope.launch(Dispatchers.IO) {
+            setState { copy(isRefreshing = true) }
+            try {
+                delay(500)
+                observeListDiary()
+                setState { copy(isRefreshing = false) }
+            } catch (e: Exception) {
+                Log.e("DiaryViewModel", "Refresh failed", e)
+                setState { copy(isRefreshing = false) }
+                sendEvent(DiaryUiEvent.DiaryError("Refresh failed"))
+            }
+        }
+    }
+
+    fun setSortOrder(order: SortOrder) {
+        setState { copy(sortOrder = order) }
     }
 }

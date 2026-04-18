@@ -54,6 +54,7 @@ class DiaryDetailViewModel @Inject constructor(
                         diaryId = diary.id,
                         originalDiary = diary,
                         wordCount = countWords(diary.content),
+                        isViewMode = true,
                     )
                 }
             }

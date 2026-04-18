@@ -9,7 +9,9 @@
       "Bash(xargs -I{} jar tf {})",
       "Bash(jar tf:*)",
       "Bash(./gradlew assembleDebug:*)",
-      "Bash(./gradlew compileDebugKotlin:*)"
+      "Bash(./gradlew compileDebugKotlin:*)",
+      "Skill(update-config)",
+      "Bash(java *)"
     ]
   }
 }

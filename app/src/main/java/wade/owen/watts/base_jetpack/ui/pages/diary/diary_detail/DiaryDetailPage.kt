@@ -6,6 +6,7 @@
 package wade.owen.watts.base_jetpack.ui.pages.diary.diary_detail
 
 import android.Manifest
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -56,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,6 +91,7 @@ fun DiaryDetailPage(
     val cs = MaterialTheme.colorScheme
     val ty = MaterialTheme.typography
     val isNew = uiState.diaryId == null
+    val context = LocalContext.current
 
     // ── RichTextEditor state ──────────────────────────────────────────────────
     val richState = rememberRichTextState()
@@ -120,6 +124,15 @@ fun DiaryDetailPage(
 
                 is DiaryDetailEvent.LocationInserted -> snackbar.showSnackbar("📍 ${event.address}")
                 is DiaryDetailEvent.ImagePicked -> { /* handled via addImage */
+                }
+                is DiaryDetailEvent.ShareDiary -> {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_SUBJECT, event.title)
+                        putExtra(Intent.EXTRA_TEXT, "${event.title}\n\n${event.content}")
+                        type = "text/plain"
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Share diary entry"))
                 }
             }
         }
@@ -156,9 +169,19 @@ fun DiaryDetailPage(
         topBar = {
             DiaryDetailTopBar(
                 isNew = isNew,
+                isViewMode = uiState.isViewMode,
                 isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
                 onBack = { viewModel.checkChangesAndDismiss() },
                 onSave = { viewModel.saveDiary() },
+                onShare = {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_SUBJECT, uiState.title)
+                        putExtra(Intent.EXTRA_TEXT, "${uiState.title}\n\n${uiState.content}")
+                        type = "text/plain"
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Share diary entry"))
+                }
             )
         },
     ) { innerPadding ->
@@ -187,7 +210,8 @@ fun DiaryDetailPage(
             // ── Title ─────────────────────────────────────────────────────────
             androidx.compose.foundation.text.BasicTextField(
                 value = uiState.title,
-                onValueChange = { viewModel.updateTitle(it) },
+                onValueChange = { if (!uiState.isViewMode) viewModel.updateTitle(it) },
+                enabled = !uiState.isViewMode,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
@@ -300,9 +324,11 @@ fun DiaryDetailPage(
 @Composable
 private fun DiaryDetailTopBar(
     isNew: Boolean,
+    isViewMode: Boolean,
     isSaving: Boolean,
     onBack: () -> Unit,
     onSave: () -> Unit,
+    onShare: () -> Unit,
 ) {
     val cs = MaterialTheme.colorScheme
     val ty = MaterialTheme.typography
@@ -337,12 +363,21 @@ private fun DiaryDetailTopBar(
                 textAlign = TextAlign.Center,
             )
 
-            // Save button
+            // Action buttons (share when viewing, save otherwise)
             Box(
                 modifier = Modifier.width(64.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                if (isSaving) {
+                if (isViewMode) {
+                    IconButton(onClick = onShare) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share",
+                            tint = cs.onBackground,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                } else if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = cs.onBackground,
