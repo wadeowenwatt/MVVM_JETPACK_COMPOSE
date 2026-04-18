@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -68,6 +69,8 @@ import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
 import wade.owen.watts.base_jetpack.core.router.RootDestination
 import wade.owen.watts.base_jetpack.domain.entities.Diary
 import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 // ─── DiaryPage ─────────────────────────────────────────────────────────────────
@@ -127,6 +130,12 @@ fun DiaryPage(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
+                // Group entries by date
+                val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
+                val groupedEntries = list.groupBy { diary ->
+                    dateFormat.format(diary.createdDate)
+                }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
@@ -135,16 +144,21 @@ fun DiaryPage(
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(list, key = { it.id }) { diary ->
-                        DiaryCard(
-                            diary = diary,
-                            onEditClick = {
-                                navController.navigate(
-                                    RootDestination.createDiaryDetailRoute(diary.id)
-                                )
-                            },
-                            onDeleteClick = { viewModel.showDeleteDialog(diary) }
-                        )
+                    groupedEntries.forEach { (date, entries) ->
+                        item {
+                            DiaryDateHeader(dateString = date)
+                        }
+                        items(entries, key = { it.id }) { diary ->
+                            DiaryCard(
+                                diary = diary,
+                                onEditClick = {
+                                    navController.navigate(
+                                        RootDestination.createDiaryDetailRoute(diary.id)
+                                    )
+                                },
+                                onDeleteClick = { viewModel.showDeleteDialog(diary) }
+                            )
+                        }
                     }
                     // Khoảng trống cuối tránh bị FAB che
                     item { Spacer(Modifier.height(88.dp)) }
@@ -327,10 +341,10 @@ private fun DiarySortBar(
             Box {
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(12.dp))
                         .background(cs.surfaceVariant)
                         .clickable { isDropdownOpen = true }
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -372,6 +386,32 @@ private fun DiarySortBar(
             }
         }
     }
+}
+
+// ─── Diary Card ────────────────────────────────────────────────────────────────
+
+@Composable
+private fun DiaryDateHeader(
+    dateString: String,
+    modifier: Modifier = Modifier
+) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+
+    Text(
+        text = dateString.uppercase(Locale.getDefault()),
+        style = ty.titleLarge.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        ),
+        color = cs.onSurface,
+        modifier = modifier.padding(
+            top = 16.dp,
+            bottom = 8.dp,
+            start = 0.dp,
+            end = 0.dp
+        )
+    )
 }
 
 // ─── Diary Card ────────────────────────────────────────────────────────────────

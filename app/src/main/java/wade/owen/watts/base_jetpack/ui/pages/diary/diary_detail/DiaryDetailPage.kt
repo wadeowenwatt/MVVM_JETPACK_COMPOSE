@@ -33,6 +33,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -57,7 +58,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -334,6 +337,10 @@ fun DiaryDetailPage(
             // ── Rich Text Editor ──────────────────────────────────────────────
             if (uiState.isViewMode) {
                 // Read-only content display in view mode
+                var isExpanded by remember { mutableStateOf(false) }
+                val wordCount = uiState.content.split("\\s+".toRegex()).count { it.isNotBlank() }
+                val shouldShowReadMore = wordCount > 300
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -342,13 +349,73 @@ fun DiaryDetailPage(
                         .background(cs.surfaceVariant.copy(alpha = 0.3f))
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = if (uiState.content.isNotEmpty()) uiState.content else "No content",
-                        style = ty.bodyLarge.copy(
-                            lineHeight = 26.sp,
-                            color = if (uiState.content.isNotEmpty()) cs.onBackground else cs.onSurfaceVariant.copy(alpha = 0.5f)
+                    Column {
+                        Text(
+                            text = if (uiState.content.isNotEmpty()) {
+                                if (shouldShowReadMore && !isExpanded) {
+                                    uiState.content.split("\\s+".toRegex()).take(150).joinToString(" ") + "..."
+                                } else {
+                                    uiState.content
+                                }
+                            } else {
+                                "No content"
+                            },
+                            style = ty.bodyLarge.copy(
+                                lineHeight = 26.sp,
+                                color = if (uiState.content.isNotEmpty()) cs.onBackground else cs.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
                         )
-                    )
+
+                        if (shouldShowReadMore) {
+                            Spacer(Modifier.height(8.dp))
+                            TextButton(
+                                onClick = { isExpanded = !isExpanded },
+                                modifier = Modifier.padding(start = 0.dp)
+                            ) {
+                                Text(
+                                    text = if (isExpanded) "Show less" else "Read more",
+                                    style = ty.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = cs.primary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ── Hashtags display ─────────────────────────────────────────
+                val hashtagPattern = "#\\w+".toRegex()
+                val hashtags = hashtagPattern.findAll(uiState.content).map { it.value }.distinct().toList()
+                if (hashtags.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(hashtags) { hashtag ->
+                                androidx.compose.material3.OutlinedButton(
+                                    onClick = { },
+                                    modifier = Modifier.height(32.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp,
+                                        cs.primary
+                                    )
+                                ) {
+                                    Text(
+                                        text = hashtag,
+                                        style = ty.labelSmall,
+                                        color = cs.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             } else {
                 // Editable RichTextEditor in edit mode
@@ -361,10 +428,16 @@ fun DiaryDetailPage(
                     placeholder = {
                         Text(
                             text = "How was your day?",
-                            style = ty.bodyLarge.copy(
-                                lineHeight = 26.sp,
-                                color = cs.onSurfaceVariant.copy(alpha = 0.5f),
-                            )
+                            style = ty.displaySmall.copy(
+                                lineHeight = 32.sp,
+                                color = cs.outline.copy(alpha = 0.6f),
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 32.dp),
+                            textAlign = TextAlign.Center
                         )
                     },
                     textStyle = ty.bodyLarge.copy(
@@ -382,16 +455,39 @@ fun DiaryDetailPage(
             // ── Selected images strip ─────────────────────────────────────────
             if (uiState.imageUris.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    items(uiState.imageUris) { uri ->
-                        DiaryImageThumbnail(
-                            uri = uri,
-                            onRemove = { viewModel.removeImage(uri) },
-                        )
+                if (uiState.isViewMode) {
+                    // Full-width images in view mode
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        uiState.imageUris.forEach { uri ->
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(240.dp)
+                                    .clip(RoundedCornerShape(12.dp)),
+                            )
+                        }
+                    }
+                } else {
+                    // Horizontal scroll in edit mode
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        items(uiState.imageUris) { uri ->
+                            DiaryImageThumbnail(
+                                uri = uri,
+                                onRemove = { viewModel.removeImage(uri) },
+                            )
+                        }
                     }
                 }
             }
@@ -633,15 +729,22 @@ private fun DiaryBottomToolbar(
                 )
             }
 
-            // ── TTS icon (disabled) ────────────────────────────────────────
-            IconButton(
-                onClick = onTtsClick,
-                enabled = false,           // implement later
-            ) {
+            // ── Voice icon (placeholder for future implementation) ────────────
+            IconButton(onClick = { }) {
+                Icon(
+                    painter = painterResource(android.R.drawable.ic_btn_speak_now),
+                    contentDescription = "Record voice note",
+                    tint = cs.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+
+            // ── Link icon (placeholder for future implementation) ──────────────
+            IconButton(onClick = { }) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Text to speech (coming soon)",
-                    tint = cs.onSurfaceVariant.copy(alpha = 0.3f),
+                    contentDescription = "Insert link",
+                    tint = cs.onSurfaceVariant,
                     modifier = Modifier.size(24.dp),
                 )
             }
@@ -688,7 +791,7 @@ private fun DiaryBottomToolbar(
 
             // ── Word count ─────────────────────────────────────────────────
             Text(
-                text = "$wordCount word${if (wordCount == 1) "" else "s"}",
+                text = "$wordCount words",
                 style = ty.labelMedium,
                 color = cs.onSurfaceVariant,
             )

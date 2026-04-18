@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -311,7 +313,7 @@ private fun CalendarGrid(
                                 if (isToday && !isSelected)
                                     Modifier.border(
                                         2.dp,
-                                        cs.primary.copy(alpha = 0.5f),
+                                        cs.primary,
                                         CircleShape
                                     ) else Modifier
                             )
@@ -438,33 +440,37 @@ private fun CalendarEntryCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = cs.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = cs.surface
         ),
-        elevation = CardDefaults.cardElevation(0.dp)
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = cs.outline
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp,
+            pressedElevation = 4.dp
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
             Text(
                 text = title,
-                style = ty.titleSmall.copy(fontWeight = FontWeight.Bold),
-                maxLines = 1
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = preview,
-                style = ty.bodySmall.copy(
-                    color = cs.onSurface.copy(alpha = 0.6f)
+                style = ty.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
                 ),
-                maxLines = 2
+                color = cs.onSurface,
+                maxLines = 1
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Read More →",
-                style = ty.labelMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = cs.primary
-                )
+                text = preview,
+                style = ty.bodySmall.copy(
+                    lineHeight = 20.sp
+                ),
+                color = cs.secondary,
+                maxLines = 2
             )
         }
     }
