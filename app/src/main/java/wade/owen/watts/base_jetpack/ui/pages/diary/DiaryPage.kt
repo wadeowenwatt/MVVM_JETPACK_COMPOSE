@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -45,7 +47,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,13 +83,19 @@ fun DiaryPage(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            DiaryTopBar(
-                isSearchActive = uiState.isSearchActive,
-                searchQuery = uiState.searchQuery,
-                onSearchToggle = { viewModel.toggleSearch() },
-                onQueryChange = { viewModel.updateSearchQuery(it) },
-                onSearchDone = { keyboard?.hide() }
-            )
+            Column {
+                DiaryTopBar(
+                    isSearchActive = uiState.isSearchActive,
+                    searchQuery = uiState.searchQuery,
+                    onSearchToggle = { viewModel.toggleSearch() },
+                    onQueryChange = { viewModel.updateSearchQuery(it) },
+                    onSearchDone = { keyboard?.hide() }
+                )
+                DiarySortBar(
+                    sortOrder = uiState.sortOrder,
+                    onSortOrderChange = { viewModel.setSortOrder(it) }
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -283,6 +293,84 @@ private fun DiaryTopBar(
             color = cs.outline,
             thickness = 1.dp
         )
+    }
+}
+
+// ─── Sort Options Bar ──────────────────────────────────────────────────────────
+
+@Composable
+private fun DiarySortBar(
+    sortOrder: SortOrder,
+    onSortOrderChange: (SortOrder) -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+    var isDropdownOpen by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(cs.background)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Sort",
+                style = ty.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = cs.onSurfaceVariant
+            )
+
+            Box {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(cs.surfaceVariant)
+                        .clickable { isDropdownOpen = true }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = when (sortOrder) {
+                            SortOrder.NEWEST_FIRST -> "Newest First"
+                            SortOrder.OLDEST_FIRST -> "Oldest First"
+                            SortOrder.ALPHABETICAL -> "A - Z"
+                        },
+                        style = ty.labelSmall,
+                        color = cs.onSurfaceVariant
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = isDropdownOpen,
+                    onDismissRequest = { isDropdownOpen = false },
+                    modifier = Modifier.background(cs.surface)
+                ) {
+                    SortOrder.values().forEach { order ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = when (order) {
+                                        SortOrder.NEWEST_FIRST -> "Newest First"
+                                        SortOrder.OLDEST_FIRST -> "Oldest First"
+                                        SortOrder.ALPHABETICAL -> "A - Z"
+                                    },
+                                    style = ty.labelSmall
+                                )
+                            },
+                            onClick = {
+                                onSortOrderChange(order)
+                                isDropdownOpen = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
