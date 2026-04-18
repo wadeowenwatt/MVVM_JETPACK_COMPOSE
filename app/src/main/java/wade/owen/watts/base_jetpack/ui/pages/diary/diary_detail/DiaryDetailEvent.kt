@@ -9,4 +9,6 @@ sealed class DiaryDetailEvent : UiEvent {
     data class LocationInserted(val address: String) : DiaryDetailEvent()
     data class ImagePicked(val uri: Uri) : DiaryDetailEvent()
     data class ShareDiary(val title: String, val content: String) : DiaryDetailEvent()
+    object DiaryDeleted : DiaryDetailEvent()
+    data class ShowUndoSnackbar(val message: String) : DiaryDetailEvent()
 }

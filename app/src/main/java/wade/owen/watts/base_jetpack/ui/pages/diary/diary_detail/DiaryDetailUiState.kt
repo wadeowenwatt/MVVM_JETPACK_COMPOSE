@@ -19,4 +19,7 @@ data class DiaryDetailUiState(
     val wordCount: Int = 0,                    // đếm số từ realtime
     val isViewMode: Boolean = false,           // true when viewing existing entry
     val shareText: String = "",                // formatted text for sharing
+    // ── Delete features ─────────────────────────────────────────────────────────
+    val isDeletingEntry: Boolean = false,      // loading state during deletion
+    val showDeleteConfirmDialog: Boolean = false, // confirmation before delete
 ) : UiState

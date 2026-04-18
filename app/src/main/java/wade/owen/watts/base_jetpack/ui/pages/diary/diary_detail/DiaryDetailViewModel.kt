@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -223,6 +224,74 @@ class DiaryDetailViewModel @Inject constructor(
                 Log.e("DiaryDetailVM", "saveDiary failed", e)
                 setState { copy(loadStatus = LoadStatus.FAILURE) }
                 sendEvent(DiaryDetailEvent.DiaryDetailError("Save diary failed"))
+            }
+        }
+    }
+
+    // ── Delete with Undo ──────────────────────────────────────────────────────
+
+    private var deletedDiary: Diary? = null
+    private var undoJob: kotlinx.coroutines.Job? = null
+
+    fun showDeleteConfirmDialog() {
+        setState { copy(showDeleteConfirmDialog = true) }
+    }
+
+    fun dismissDeleteConfirmDialog() {
+        setState { copy(showDeleteConfirmDialog = false) }
+    }
+
+    fun confirmDelete() {
+        dismissDeleteConfirmDialog()
+        val s = state.value
+        val diary = s.originalDiary ?: return
+        deletedDiary = diary
+        viewModelScope.launch(Dispatchers.IO) {
+            setState { copy(isDeletingEntry = true) }
+            try {
+                diaryRepository.deleteDiary(diary)
+                setState { copy(isDeletingEntry = false) }
+                sendEvent(
+                    DiaryDetailEvent.ShowUndoSnackbar(
+                        "Entry deleted. Undo in 3 seconds..."
+                    )
+                )
+                // Schedule permanent deletion after 3 seconds if not undone
+                undoJob?.cancel()
+                undoJob = viewModelScope.launch {
+                    delay(3000)
+                    deletedDiary = null // Clear after timeout
+                }
+            } catch (e: Exception) {
+                Log.e("DiaryDetailVM", "deleteDiary failed", e)
+                deletedDiary = null
+                setState { copy(isDeletingEntry = false) }
+                sendEvent(DiaryDetailEvent.DiaryDetailError("Delete failed"))
+            }
+        }
+    }
+
+    fun undoDelete() {
+        val diary = deletedDiary ?: return
+        undoJob?.cancel()
+        viewModelScope.launch(Dispatchers.IO) {
+            setState { copy(isDeletingEntry = true) }
+            try {
+                diaryRepository.insertDiary(diary)
+                setState {
+                    copy(
+                        isDeletingEntry = false,
+                        originalDiary = diary,
+                        title = diary.title,
+                        content = diary.content,
+                    )
+                }
+                sendEvent(DiaryDetailEvent.DiaryDetailError("Entry restored"))
+                deletedDiary = null
+            } catch (e: Exception) {
+                Log.e("DiaryDetailVM", "undoDelete failed", e)
+                setState { copy(isDeletingEntry = false) }
+                sendEvent(DiaryDetailEvent.DiaryDetailError("Undo failed"))
             }
         }
     }

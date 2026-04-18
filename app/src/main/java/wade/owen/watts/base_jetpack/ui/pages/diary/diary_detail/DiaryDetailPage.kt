@@ -48,8 +48,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -138,6 +140,18 @@ fun DiaryDetailPage(
                     }
                     context.startActivity(Intent.createChooser(intent, "Share diary entry"))
                 }
+                is DiaryDetailEvent.ShowUndoSnackbar -> {
+                    snackbar.showSnackbar(
+                        event.message,
+                        actionLabel = "Undo",
+                        duration = SnackbarDuration.Short
+                    ).let { result ->
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.undoDelete()
+                        }
+                    }
+                }
+                is DiaryDetailEvent.DiaryDeleted -> navController.popBackStack()
             }
         }
     }
@@ -175,10 +189,12 @@ fun DiaryDetailPage(
                 isNew = isNew,
                 isViewMode = uiState.isViewMode,
                 isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
+                isDeleting = uiState.isDeletingEntry,
                 title = uiState.title,
                 content = uiState.content,
                 onBack = { viewModel.checkChangesAndDismiss() },
                 onSave = { viewModel.saveDiary() },
+                onDelete = { viewModel.showDeleteConfirmDialog() },
                 onShare = {
                     val intent = Intent().apply {
                         action = Intent.ACTION_SEND
@@ -388,6 +404,18 @@ fun DiaryDetailPage(
             titleButtonDismiss = "Keep Editing",
         )
     }
+
+    // ── Delete confirmation dialog ────────────────────────────────────────────
+    if (uiState.showDeleteConfirmDialog) {
+        AppAlertDialog(
+            title = "Delete Entry?",
+            content = "This action cannot be undone immediately. You'll have 3 seconds to undo.",
+            onConfirm = { viewModel.confirmDelete() },
+            onDismissRequest = { viewModel.dismissDeleteConfirmDialog() },
+            titleButtonConfirm = "Delete",
+            titleButtonDismiss = "Cancel",
+        )
+    }
 }
 
 // ─── Top Bar ───────────────────────────────────────────────────────────────────
@@ -397,10 +425,12 @@ private fun DiaryDetailTopBar(
     isNew: Boolean,
     isViewMode: Boolean,
     isSaving: Boolean,
+    isDeleting: Boolean,
     title: String,
     content: String,
     onBack: () -> Unit,
     onSave: () -> Unit,
+    onDelete: () -> Unit,
     onShare: () -> Unit,
     onCopied: () -> Unit,
 ) {
@@ -440,7 +470,7 @@ private fun DiaryDetailTopBar(
             // Action buttons (share/copy/delete when viewing, save otherwise)
             if (isViewMode) {
                 Row(
-                    modifier = Modifier.width(120.dp),
+                    modifier = Modifier.width(160.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -459,6 +489,22 @@ private fun DiaryDetailTopBar(
                             tint = cs.onBackground,
                             modifier = Modifier.size(20.dp),
                         )
+                    }
+                    if (isDeleting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = cs.onBackground,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        IconButton(onClick = onDelete, modifier = Modifier.size(40.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = cs.error,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
                     }
                 }
             } else if (isSaving) {
