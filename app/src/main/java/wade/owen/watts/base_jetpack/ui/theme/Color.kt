@@ -2,32 +2,23 @@ package wade.owen.watts.base_jetpack.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
-
-// ── Stitch / Diary design palette ─────────────────────────────────────────────
+// ── Pencil design system tokens ───────────────────────────────────────────────
 // Light
-val DiaryBackgroundLight = Color(0xFFF7F7F7)
-val DiaryCardLight       = Color(0xFFFFFFFF)
-val DiaryBorderLight     = Color(0xFFF1F5F9) // slate-100
+val DiaryBackgroundLight    = Color(0xFFF2F3F0) // $--background light
+val DiaryForegroundLight    = Color(0xFF111111) // $--foreground light
+val DiaryCardLight          = Color(0xFFFFFFFF) // $--card light
+val DiaryBorderLight        = Color(0xFFCBCCC9) // $--border light
+val DiarySecondaryLight     = Color(0xFFE7E8E5) // $--secondary light (button bg)
+val DiaryMutedFgLight       = Color(0xFF666666) // $--muted-foreground light
 
 // Dark
-val DiaryBackgroundDark  = Color(0xFF191919)
-val DiaryCardDark        = Color(0xFF0F172A) // slate-900
-val DiaryBorderDark      = Color(0xFF1E293B) // slate-800
+val DiaryBackgroundDark     = Color(0xFF111111) // $--background dark
+val DiaryForegroundDark     = Color(0xFFFFFFFF) // $--foreground dark
+val DiaryCardDark           = Color(0xFF1A1A1A) // $--card dark
+val DiaryBorderDark         = Color(0xFF2E2E2E) // $--border dark
+val DiarySecondaryDark      = Color(0xFF2E2E2E) // $--secondary dark (button bg)
+val DiaryMutedFgDark        = Color(0xFFB8B9B6) // $--muted-foreground dark
 
-// Slate scale (shared light+dark)
-val Slate300  = Color(0xFFCBD5E1)
-val Slate400  = Color(0xFF94A3B8)
-val Slate500  = Color(0xFF64748B)
-val Slate600  = Color(0xFF475569)
-val Slate800  = Color(0xFF1E293B)
-val Slate900  = Color(0xFF0F172A)
-
-// Accent
-val DiaryPrimary = Color(0xFF000000) // primary = black (Stitch)
+// Destructive
+val DiaryDestructiveLight   = Color(0xFFD93C15)
+val DiaryDestructiveDark    = Color(0xFFFF5C33)

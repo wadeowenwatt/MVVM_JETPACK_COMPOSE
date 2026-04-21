@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -30,16 +29,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,14 +42,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,9 +60,8 @@ import androidx.navigation.compose.rememberNavController
 import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
 import wade.owen.watts.base_jetpack.core.router.RootDestination
 import wade.owen.watts.base_jetpack.domain.entities.Diary
+import wade.owen.watts.base_jetpack.R
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 // ─── DiaryPage ─────────────────────────────────────────────────────────────────
@@ -86,26 +77,20 @@ fun DiaryPage(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            Column {
-                DiaryTopBar(
-                    isSearchActive = uiState.isSearchActive,
-                    searchQuery = uiState.searchQuery,
-                    onSearchToggle = { viewModel.toggleSearch() },
-                    onQueryChange = { viewModel.updateSearchQuery(it) },
-                    onSearchDone = { keyboard?.hide() }
-                )
-                DiarySortBar(
-                    sortOrder = uiState.sortOrder,
-                    onSortOrderChange = { viewModel.setSortOrder(it) }
-                )
-            }
+            DiaryTopBar(
+                isSearchActive = uiState.isSearchActive,
+                searchQuery = uiState.searchQuery,
+                onSearchToggle = { viewModel.toggleSearch() },
+                onQueryChange = { viewModel.updateSearchQuery(it) },
+                onSearchDone = { keyboard?.hide() }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(RootDestination.createDiaryDetailRoute()) },
                 shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.onBackground,
+                contentColor = MaterialTheme.colorScheme.background,
                 elevation = FloatingActionButtonDefaults.elevation(6.dp),
                 modifier = Modifier.padding(bottom = 72.dp)
             ) {
@@ -130,35 +115,24 @@ fun DiaryPage(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                // Group entries by date
-                val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
-                val groupedEntries = list.groupBy { diary ->
-                    dateFormat.format(diary.createdDate)
-                }
-
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         horizontal = 16.dp,
                         vertical = 12.dp
                     ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    groupedEntries.forEach { (date, entries) ->
-                        item {
-                            DiaryDateHeader(dateString = date)
-                        }
-                        items(entries, key = { it.id }) { diary ->
-                            DiaryCard(
-                                diary = diary,
-                                onEditClick = {
-                                    navController.navigate(
-                                        RootDestination.createDiaryDetailRoute(diary.id)
-                                    )
-                                },
-                                onDeleteClick = { viewModel.showDeleteDialog(diary) }
-                            )
-                        }
+                    items(list, key = { it.id }) { diary ->
+                        DiaryCard(
+                            diary = diary,
+                            onEditClick = {
+                                navController.navigate(
+                                    RootDestination.createDiaryDetailRoute(diary.id)
+                                )
+                            },
+                            onDeleteClick = { viewModel.showDeleteDialog(diary) }
+                        )
                     }
                     // Khoảng trống cuối tránh bị FAB che
                     item { Spacer(Modifier.height(88.dp)) }
@@ -227,7 +201,7 @@ private fun DiaryTopBar(
             // Search toggle button (circle)
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(cs.surfaceVariant)
                     .clickable(
@@ -241,8 +215,8 @@ private fun DiaryTopBar(
                     imageVector = if (isSearchActive) Icons.Default.Close
                     else Icons.Outlined.Search,
                     contentDescription = if (isSearchActive) "Close search" else "Search",
-                    tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    tint = cs.onBackground,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -302,116 +276,7 @@ private fun DiaryTopBar(
                 }
             }
         }
-
-        HorizontalDivider(
-            color = cs.outline,
-            thickness = 1.dp
-        )
     }
-}
-
-// ─── Sort Options Bar ──────────────────────────────────────────────────────────
-
-@Composable
-private fun DiarySortBar(
-    sortOrder: SortOrder,
-    onSortOrderChange: (SortOrder) -> Unit
-) {
-    val cs = MaterialTheme.colorScheme
-    val ty = MaterialTheme.typography
-    var isDropdownOpen by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(cs.background)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Sort",
-                style = ty.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = cs.onSurfaceVariant
-            )
-
-            Box {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(cs.surfaceVariant)
-                        .clickable { isDropdownOpen = true }
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = when (sortOrder) {
-                            SortOrder.NEWEST_FIRST -> "Newest First"
-                            SortOrder.OLDEST_FIRST -> "Oldest First"
-                            SortOrder.ALPHABETICAL -> "A - Z"
-                        },
-                        style = ty.labelSmall,
-                        color = cs.onSurfaceVariant
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = isDropdownOpen,
-                    onDismissRequest = { isDropdownOpen = false },
-                    modifier = Modifier.background(cs.surface)
-                ) {
-                    SortOrder.values().forEach { order ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = when (order) {
-                                        SortOrder.NEWEST_FIRST -> "Newest First"
-                                        SortOrder.OLDEST_FIRST -> "Oldest First"
-                                        SortOrder.ALPHABETICAL -> "A - Z"
-                                    },
-                                    style = ty.labelSmall
-                                )
-                            },
-                            onClick = {
-                                onSortOrderChange(order)
-                                isDropdownOpen = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ─── Diary Card ────────────────────────────────────────────────────────────────
-
-@Composable
-private fun DiaryDateHeader(
-    dateString: String,
-    modifier: Modifier = Modifier
-) {
-    val cs = MaterialTheme.colorScheme
-    val ty = MaterialTheme.typography
-
-    Text(
-        text = dateString.uppercase(Locale.getDefault()),
-        style = ty.titleLarge.copy(
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp
-        ),
-        color = cs.onSurface,
-        modifier = modifier.padding(
-            top = 16.dp,
-            bottom = 8.dp,
-            start = 0.dp,
-            end = 0.dp
-        )
-    )
 }
 
 // ─── Diary Card ────────────────────────────────────────────────────────────────
@@ -484,10 +349,10 @@ fun DiaryCard(
                         modifier = Modifier.size(34.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Edit,
+                            painter = painterResource(R.drawable.ic_edit),
                             contentDescription = "Edit",
                             tint = cs.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                     IconButton(
@@ -495,10 +360,10 @@ fun DiaryCard(
                         modifier = Modifier.size(34.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            painter = painterResource(R.drawable.ic_recycle_bin),
                             contentDescription = "Delete",
-                            tint = Color(0xFFEF4444).copy(alpha = 0.8f),
-                            modifier = Modifier.size(18.dp)
+                            tint = cs.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -510,7 +375,7 @@ fun DiaryCard(
                 Text(
                     text = diary.content,
                     style = ty.bodySmall.copy(lineHeight = 20.sp),
-                    color = cs.secondary,
+                    color = cs.onSurfaceVariant,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )

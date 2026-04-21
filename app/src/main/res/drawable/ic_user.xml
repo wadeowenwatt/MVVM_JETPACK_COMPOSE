@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="20"
+    android:viewportHeight="20">
+  <!-- Lucide user (scaled to 20x20 from 24x24) -->
+  <path
+      android:pathData="M16.667,17.5V15.833C16.667,14.948 16.316,14.098 15.69,13.473C15.065,12.847 14.216,12.5 13.333,12.5H6.667C5.783,12.5 4.934,12.847 4.309,13.473C3.683,14.098 3.333,14.948 3.333,15.833V17.5"
+      android:strokeLineJoin="round"
+      android:strokeWidth="1.66667"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M10,9.167C11.841,9.167 13.333,7.674 13.333,5.833C13.333,3.993 11.841,2.5 10,2.5C8.159,2.5 6.667,3.993 6.667,5.833C6.667,7.674 8.159,9.167 10,9.167Z"
+      android:strokeLineJoin="round"
+      android:strokeWidth="1.66667"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"
+      android:strokeLineCap="round"/>
+</vector>
