@@ -221,6 +221,10 @@ class DiaryDetailViewModel @Inject constructor(
         setState { copy(validationError = null) }
     }
 
+    fun switchToEditMode() {
+        setState { copy(isViewMode = false) }
+    }
+
     // ── Auto-Save (Optional Enhancement) ──────────────────────────────────────
 
     private fun startAutoSave() {

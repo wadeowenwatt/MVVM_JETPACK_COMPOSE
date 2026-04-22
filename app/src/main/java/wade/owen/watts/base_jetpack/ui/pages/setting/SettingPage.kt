@@ -1,7 +1,8 @@
 package wade.owen.watts.base_jetpack.ui.pages.setting
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
+import android.app.Activity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,37 +17,38 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.domain.entities.enums.AppTheme
 import wade.owen.watts.base_jetpack.global.LocalMainViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ─── SettingPage ──────────────────────────────────────────────────────────────
+
 @Composable
 fun SettingPage(
     modifier: Modifier = Modifier,
@@ -54,218 +56,121 @@ fun SettingPage(
     val context = LocalContext.current
     val viewModel = hiltViewModel<SettingViewModel>()
     val mainVM = LocalMainViewModel.current
-    val colorScheme = MaterialTheme.colorScheme
+    val mainState by mainVM.state.collectAsState()
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorScheme.surface
-                )
-            )
-        },
-        containerColor = colorScheme.surface
-    ) { innerPadding ->
+    var bgMusicOn by remember { mutableStateOf(true) }
+    var soundFxOn by remember { mutableStateOf(false) }
+
+    val themeLabel = when (mainState.theme) {
+        AppTheme.LIGHT -> "Light"
+        AppTheme.DARK -> "Dark"
+        AppTheme.SYSTEM -> "System"
+    }
+    val nextTheme = when (mainState.theme) {
+        AppTheme.LIGHT -> AppTheme.DARK
+        AppTheme.DARK -> AppTheme.SYSTEM
+        AppTheme.SYSTEM -> AppTheme.LIGHT
+    }
+
+    Scaffold(containerColor = cs.background) { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            HorizontalDivider(color = colorScheme.onSurface.copy(alpha = 0.08f))
-
-            Spacer(Modifier.height(24.dp))
-
-            // Appearance Section
-            SettingsSectionTitle("Appearance")
-
-            Spacer(Modifier.height(8.dp))
-
-            Card(
+            // ── Header ─────────────────────────────────────────────────────
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                ),
-                elevation = CardDefaults.cardElevation(0.dp)
+                    .height(52.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Column {
-                    AppearanceOption(
-                        label = "Light",
-                        emoji = "☀️",
-                        selected = false,
-                        onClick = { mainVM.changeTheme(AppTheme.LIGHT) }
-                    )
-                    HorizontalDivider(color = colorScheme.onSurface.copy(alpha = 0.06f))
-                    AppearanceOption(
-                        label = "Dark",
-                        emoji = "🌙",
-                        selected = false,
-                        onClick = { mainVM.changeTheme(AppTheme.DARK) }
-                    )
-                    HorizontalDivider(color = colorScheme.onSurface.copy(alpha = 0.06f))
-                    AppearanceOption(
-                        label = "System Default",
-                        emoji = "💻",
-                        selected = true,
-                        onClick = { mainVM.changeTheme(AppTheme.SYSTEM) }
-                    )
-                }
+                Text(
+                    text = "Settings",
+                    style = ty.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    ),
+                    color = cs.onBackground
+                )
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            // General Section
-            SettingsSectionTitle("General")
-
-            Spacer(Modifier.height(8.dp))
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            // ── Content ────────────────────────────────────────────────────
+            Column(
+                modifier = Modifier.padding(
+                    top = 24.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 24.dp
                 ),
-                elevation = CardDefaults.cardElevation(0.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Column {
+                // ── APPEARANCE ──────────────────────────────────────────────
+                SettingsSection(title = "APPEARANCE") {
                     SettingsNavRow(
-                        icon = Icons.Default.Settings,
-                        label = "Language",
-                        subtitle = "English (US)",
-                        onClick = {}
+                        iconRes = R.drawable.ic_sun,
+                        label = "Theme",
+                        valueText = themeLabel,
+                        showDivider = true,
+                        onClick = { mainVM.changeTheme(nextTheme) }
                     )
-                    HorizontalDivider(color = colorScheme.onSurface.copy(alpha = 0.06f))
                     SettingsNavRow(
-                        icon = Icons.Default.Notifications,
-                        label = "Notifications",
-                        onClick = {}
-                    )
-                    HorizontalDivider(color = colorScheme.onSurface.copy(alpha = 0.06f))
-                    SettingsNavRow(
-                        icon = Icons.Default.Info,
-                        label = "Privacy & Security",
+                        iconRes = R.drawable.ic_type,
+                        label = "Font Size",
+                        valueText = "Medium",
+                        showDivider = false,
                         onClick = {}
                     )
                 }
-            }
 
-            Spacer(Modifier.height(24.dp))
+                // ── SOUND ───────────────────────────────────────────────────
+                SettingsSection(title = "SOUND") {
+                    SettingsToggleRow(
+                        iconRes = R.drawable.ic_music,
+                        label = "Background Music",
+                        checked = bgMusicOn,
+                        showDivider = true,
+                        onCheckedChange = { bgMusicOn = it }
+                    )
+                    SettingsToggleRow(
+                        iconRes = R.drawable.ic_volume_2,
+                        label = "Sound Effects",
+                        checked = soundFxOn,
+                        showDivider = false,
+                        onCheckedChange = { soundFxOn = it }
+                    )
+                }
 
-            // Data Section
-            SettingsSectionTitle("Data")
-
-            Spacer(Modifier.height(8.dp))
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                ),
-                elevation = CardDefaults.cardElevation(0.dp)
-            ) {
-                Column {
+                // ── ABOUT ───────────────────────────────────────────────────
+                SettingsSection(title = "ABOUT") {
                     SettingsNavRow(
-                        icon = Icons.Default.Share,
-                        label = "Backup & Sync",
+                        iconRes = R.drawable.ic_info,
+                        label = "Version",
+                        valueText = "1.2.0",
+                        showDivider = true,
                         onClick = {}
                     )
-                    HorizontalDivider(color = colorScheme.onSurface.copy(alpha = 0.06f))
-                    // Clear All Data — danger
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {}
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Clear All Data",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = colorScheme.error,
-                                fontWeight = FontWeight.Medium
-                            )
-                        )
-                        Text(
-                            text = "✕",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = colorScheme.error
-                            )
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            // Language quick-switch (retained from original)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                ),
-                elevation = CardDefaults.cardElevation(0.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Quick Language Switch",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = colorScheme.onSurface.copy(alpha = 0.5f),
-                            fontWeight = FontWeight.SemiBold
-                        )
+                    SettingsNavRow(
+                        iconRes = R.drawable.ic_shield,
+                        label = "Privacy Policy",
+                        showDivider = true,
+                        onClick = {}
                     )
-                    Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(colorScheme.onSurface)
-                                .clickable { viewModel.changeLanguage(context, "en") }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Text(
-                                "English",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = colorScheme.surface,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(colorScheme.onSurface.copy(alpha = 0.1f))
-                                .clickable { viewModel.changeLanguage(context, "vi") }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Text(
-                                "Tiếng Việt",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = colorScheme.onSurface,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            )
-                        }
-                    }
+                    SettingsNavRow(
+                        iconRes = R.drawable.ic_file_text,
+                        label = "Terms of Service",
+                        showDivider = true,
+                        onClick = {}
+                    )
+                    SettingsNavRow(
+                        iconRes = R.drawable.ic_star,
+                        label = "Rate App",
+                        showDivider = false,
+                        onClick = {}
+                    )
                 }
             }
 
@@ -274,106 +179,146 @@ fun SettingPage(
     }
 }
 
-@Composable
-private fun SettingsSectionTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelMedium.copy(
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = androidx.compose.ui.unit.TextUnit(1f, androidx.compose.ui.unit.TextUnitType.Sp)
-        ),
-        modifier = Modifier.padding(horizontal = 20.dp)
-    )
-}
+// ─── Section container ────────────────────────────────────────────────────────
 
 @Composable
-private fun AppearanceOption(
-    label: String,
-    emoji: String,
-    selected: Boolean,
-    onClick: () -> Unit
+private fun SettingsSection(
+    title: String,
+    content: @Composable () -> Unit
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = emoji,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.size(36.dp)
-                .padding(4.dp)
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+            text = title,
+            style = ty.labelSmall.copy(
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 11.sp,
+                letterSpacing = 1.2.sp
             ),
-            modifier = Modifier.weight(1f)
+            color = cs.onSurfaceVariant
         )
-        RadioButton(
-            selected = selected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = colorScheme.onSurface
-            )
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = cs.surface),
+            border = BorderStroke(1.dp, cs.outline),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column { content() }
+        }
     }
 }
 
+// ─── Nav row (label + value/chevron) ─────────────────────────────────────────
+
 @Composable
 private fun SettingsNavRow(
-    icon: ImageVector,
+    iconRes: Int,
     label: String,
-    subtitle: String? = null,
+    valueText: String? = null,
+    showDivider: Boolean,
     onClick: () -> Unit
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+
+    Column {
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                icon,
+                painter = painterResource(iconRes),
                 contentDescription = label,
-                modifier = Modifier.size(20.dp),
-                tint = colorScheme.onSurface.copy(alpha = 0.7f)
+                tint = cs.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
             )
-            Column {
+            Text(
+                text = label,
+                style = ty.bodyMedium.copy(fontSize = 14.sp),
+                color = cs.onBackground,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (valueText != null) {
                 Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Medium
-                    )
+                    text = valueText,
+                    style = ty.bodySmall.copy(fontSize = 13.sp),
+                    color = cs.onSurfaceVariant
                 )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                    )
-                }
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.ic_chevron_right),
+                    contentDescription = null,
+                    tint = cs.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
-        Text(
-            text = "›",
-            style = MaterialTheme.typography.titleMedium.copy(
-                color = colorScheme.onSurface.copy(alpha = 0.35f)
+        if (showDivider) {
+            HorizontalDivider(color = cs.outline, thickness = 1.dp)
+        }
+    }
+}
+
+// ─── Toggle row ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun SettingsToggleRow(
+    iconRes: Int,
+    label: String,
+    checked: Boolean,
+    showDivider: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+    val ty = MaterialTheme.typography
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                tint = cs.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
             )
-        )
+            Text(
+                text = label,
+                style = ty.bodyMedium.copy(fontSize = 14.sp),
+                color = cs.onBackground,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = cs.onBackground,
+                    checkedThumbColor = cs.background,
+                    uncheckedTrackColor = cs.outline,
+                    uncheckedThumbColor = cs.background,
+                    uncheckedBorderColor = Color.Transparent,
+                    checkedBorderColor = Color.Transparent
+                )
+            )
+        }
+        if (showDivider) {
+            HorizontalDivider(color = cs.outline, thickness = 1.dp)
+        }
     }
 }
 

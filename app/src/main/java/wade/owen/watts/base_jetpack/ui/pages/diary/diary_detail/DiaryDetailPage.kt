@@ -14,6 +14,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,20 +33,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -54,7 +47,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,6 +62,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,6 +75,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
+import wade.owen.watts.base_jetpack.R
 import wade.owen.watts.base_jetpack.core.designsystem.AppAlertDialog
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -105,7 +99,6 @@ fun DiaryDetailPage(
     // ── RichTextEditor state ──────────────────────────────────────────────────
     val richState = rememberRichTextState()
 
-    // Sync initial content khi load entry cũ (chỉ chạy 1 lần khi content khác rỗng)
     LaunchedEffect(uiState.originalDiary) {
         uiState.originalDiary?.let {
             if (richState.toMarkdown().isBlank() && it.content.isNotBlank()) {
@@ -114,7 +107,6 @@ fun DiaryDetailPage(
         }
     }
 
-    // Sync RichEditor → ViewModel mỗi khi text thay đổi
     LaunchedEffect(richState.annotatedString) {
         viewModel.updateContent(richState.toMarkdown())
     }
@@ -127,18 +119,11 @@ fun DiaryDetailPage(
         viewModel.event.collect { event ->
             when (event) {
                 is DiaryDetailEvent.NavigateBack -> navController.popBackStack()
-                is DiaryDetailEvent.DiaryDetailError -> snackbar.showSnackbar(
-                    event.message
-                )
-                is DiaryDetailEvent.ValidationError -> snackbar.showSnackbar(
-                    event.message
-                )
-                is DiaryDetailEvent.SaveSuccess -> snackbar.showSnackbar(
-                    "Entry saved successfully"
-                )
+                is DiaryDetailEvent.DiaryDetailError -> snackbar.showSnackbar(event.message)
+                is DiaryDetailEvent.ValidationError -> snackbar.showSnackbar(event.message)
+                is DiaryDetailEvent.SaveSuccess -> snackbar.showSnackbar("Entry saved successfully")
                 is DiaryDetailEvent.LocationInserted -> snackbar.showSnackbar("📍 ${event.address}")
-                is DiaryDetailEvent.ImagePicked -> { /* handled via addImage */
-                }
+                is DiaryDetailEvent.ImagePicked -> {}
                 is DiaryDetailEvent.ShareDiary -> {
                     val intent = Intent().apply {
                         action = Intent.ACTION_SEND
@@ -154,9 +139,7 @@ fun DiaryDetailPage(
                         actionLabel = "Undo",
                         duration = SnackbarDuration.Short
                     ).let { result ->
-                        if (result == SnackbarResult.ActionPerformed) {
-                            viewModel.undoDelete()
-                        }
+                        if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete()
                     }
                 }
                 is DiaryDetailEvent.DiaryDeleted -> navController.popBackStack()
@@ -164,12 +147,10 @@ fun DiaryDetailPage(
         }
     }
 
-    // ── Image picker launcher ─────────────────────────────────────────────────
+    // ── Image picker ──────────────────────────────────────────────────────────
     val imageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris: List<Uri> ->
-        uris.forEach { viewModel.addImage(it) }
-    }
+    ) { uris: List<Uri> -> uris.forEach { viewModel.addImage(it) } }
 
     // ── Location permissions ──────────────────────────────────────────────────
     val locationPerms = rememberMultiplePermissionsState(
@@ -179,7 +160,13 @@ fun DiaryDetailPage(
         )
     )
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Date string ───────────────────────────────────────────────────────────
+    val dateString = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
+        .format(uiState.originalDiary?.createdDate ?: Date())
+        .uppercase(Locale.getDefault())
+
+    val isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING
+
     Scaffold(
         containerColor = cs.background,
         snackbarHost = {
@@ -193,255 +180,326 @@ fun DiaryDetailPage(
             }
         },
         topBar = {
-            DiaryDetailTopBar(
-                isNew = isNew,
-                isViewMode = uiState.isViewMode,
-                isSaving = uiState.loadStatus == wade.owen.watts.base_jetpack.domain.entities.enums.LoadStatus.LOADING,
-                isDeleting = uiState.isDeletingEntry,
-                isSavingDraft = uiState.isSavingDraft,
-                draftSavedIndicator = uiState.draftSavedIndicator,
-                title = uiState.title,
-                content = uiState.content,
-                onBack = { viewModel.checkChangesAndDismiss() },
-                onSave = { viewModel.saveDiary() },
-                onDelete = { viewModel.showDeleteConfirmDialog() },
-                onShare = {
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_SUBJECT, uiState.title)
-                        putExtra(Intent.EXTRA_TEXT, "${uiState.title}\n\n${uiState.content}")
-                        type = "text/plain"
-                    }
-                    context.startActivity(Intent.createChooser(intent, "Share diary entry"))
-                },
-                onCopied = {
-                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("diary_entry", "${uiState.title}\n\n${uiState.content}")
-                    clipboard.setPrimaryClip(clip)
-                }
-            )
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-        ) {
-            // ── Date label ────────────────────────────────────────────────────
-            Text(
-                text = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
-                    .format(Date()).uppercase(Locale.getDefault()),
-                style = ty.labelSmall.copy(
-                    fontWeight = FontWeight.Medium,
-                    letterSpacing = 1.6.sp,
-                ),
-                color = cs.onSurfaceVariant,
-                modifier = Modifier.padding(
-                    horizontal = 20.dp,
-                    vertical = 24.dp
-                ),
-            )
-
-            // ── Timestamps (shown in view mode) ────────────────────────────────
-            val originalDiary = uiState.originalDiary
-            if (uiState.isViewMode && originalDiary != null) {
+            if (uiState.isViewMode) {
+                // ── View mode nav: back | (space) | pencil ────────────────────
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        .height(52.dp)
+                        .background(cs.background)
+                        .padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Created",
-                            style = ty.labelSmall,
-                            color = cs.onSurfaceVariant,
-                        )
-                        Text(
-                            text = SimpleDateFormat("MMM d, yyyy HH:mm", Locale.getDefault())
-                                .format(originalDiary.createdDate),
-                            style = ty.bodySmall,
-                            color = cs.onBackground,
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Updated",
-                            style = ty.labelSmall,
-                            color = cs.onSurfaceVariant,
-                        )
-                        Text(
-                            text = SimpleDateFormat("MMM d, yyyy HH:mm", Locale.getDefault())
-                                .format(originalDiary.updatedDate),
-                            style = ty.bodySmall,
-                            color = cs.onBackground,
-                        )
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-            }
-
-            // ── Title ─────────────────────────────────────────────────────────
-            androidx.compose.foundation.text.BasicTextField(
-                value = uiState.title,
-                onValueChange = {
-                    if (!uiState.isViewMode) {
-                        viewModel.updateTitle(it)
-                        viewModel.clearValidationError()  // Clear error on edit
-                    }
-                },
-                enabled = !uiState.isViewMode,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                textStyle = ty.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 36.sp,
-                    color = cs.onBackground,
-                ),
-                cursorBrush = SolidColor(cs.onBackground),
-                decorationBox = { inner ->
-                    if (uiState.title.isEmpty()) {
-                        Text(
-                            text = "Entry Title",
-                            style = ty.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = cs.onSurfaceVariant.copy(alpha = 0.4f),
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_left),
+                        contentDescription = "Back",
+                        tint = cs.onBackground,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { viewModel.checkChangesAndDismiss() }
                             )
-                        )
-                    }
-                    inner()
-                },
-            )
-
-            // ── Validation error message ──────────────────────────────────────
-            if (uiState.validationError != null) {
-                Text(
-                    text = uiState.validationError!!,
-                    style = ty.labelSmall,
-                    color = cs.error,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                color = cs.outline,
-                thickness = 1.dp,
-            )
-            Spacer(Modifier.height(12.dp))
-
-            // ── Rich Text Editor ──────────────────────────────────────────────
-            if (uiState.isViewMode) {
-                // Read-only content display in view mode
-                var isExpanded by remember { mutableStateOf(false) }
-                val wordCount = uiState.content.split("\\s+".toRegex()).count { it.isNotBlank() }
-                val shouldShowReadMore = wordCount > 300
-
-                Box(
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_edit),
+                        contentDescription = "Edit",
+                        tint = cs.onBackground,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { viewModel.switchToEditMode() }
+                            )
+                    )
+                }
+            } else {
+                // ── Edit mode nav: back | "New Entry" centered | "Save" ───────
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(cs.surfaceVariant.copy(alpha = 0.3f))
-                        .padding(16.dp)
+                        .background(cs.background)
                 ) {
-                    Column {
-                        Text(
-                            text = if (uiState.content.isNotEmpty()) {
-                                if (shouldShowReadMore && !isExpanded) {
-                                    uiState.content.split("\\s+".toRegex()).take(150).joinToString(" ") + "..."
-                                } else {
-                                    uiState.content
-                                }
-                            } else {
-                                "No content"
-                            },
-                            style = ty.bodyLarge.copy(
-                                lineHeight = 26.sp,
-                                color = if (uiState.content.isNotEmpty()) cs.onBackground else cs.onSurfaceVariant.copy(alpha = 0.5f)
-                            )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_arrow_left),
+                            contentDescription = "Back",
+                            tint = cs.onBackground,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = { viewModel.checkChangesAndDismiss() }
+                                )
                         )
+                        Text(
+                            text = if (isNew) "New Entry" else "Edit Entry",
+                            style = ty.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp,
+                            ),
+                            color = cs.onBackground,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = cs.onBackground,
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text(
+                                text = "Save",
+                                style = ty.titleSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp,
+                                ),
+                                color = if (uiState.title.isNotEmpty()) cs.onBackground
+                                else cs.onSurfaceVariant.copy(alpha = 0.4f),
+                                modifier = Modifier.clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    enabled = uiState.title.isNotEmpty(),
+                                    onClick = { viewModel.saveDiary() }
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        bottomBar = {
+            if (!uiState.isViewMode) {
+                DiaryBottomToolbar(
+                    wordCount = uiState.wordCount,
+                    isSavingDraft = uiState.isSavingDraft,
+                    draftSavedIndicator = uiState.draftSavedIndicator,
+                    isLoadingLocation = uiState.isLoadingLocation,
+                    onImageClick = { imageLauncher.launch("image/*") },
+                    onMicClick = {},
+                    onTagClick = {},
+                    onLocationClick = {
+                        if (locationPerms.allPermissionsGranted) {
+                            viewModel.fetchAndInsertLocation()
+                        } else {
+                            locationPerms.launchMultiplePermissionRequest()
+                        }
+                    },
+                )
+            }
+        },
+    ) { innerPadding ->
+        if (uiState.isViewMode) {
+            // ── VIEW MODE ─────────────────────────────────────────────────────
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // Hero image (first image if available)
+                if (uiState.imageUris.isNotEmpty()) {
+                    AsyncImage(
+                        model = uiState.imageUris.first(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp),
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
 
-                        if (shouldShowReadMore) {
-                            Spacer(Modifier.height(8.dp))
-                            TextButton(
-                                onClick = { isExpanded = !isExpanded },
-                                modifier = Modifier.padding(start = 0.dp)
-                            ) {
-                                Text(
-                                    text = if (isExpanded) "Show less" else "Read more",
-                                    style = ty.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = cs.primary
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Date
+                    Text(
+                        text = dateString,
+                        style = ty.labelSmall.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.2.sp,
+                        ),
+                        color = cs.onSurfaceVariant,
+                    )
+
+                    // Title
+                    Text(
+                        text = uiState.title,
+                        style = ty.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 26.sp,
+                            lineHeight = (26 * 1.3).sp,
+                        ),
+                        color = cs.onBackground,
+                    )
+
+                    // Body text
+                    if (uiState.content.isNotBlank()) {
+                        Text(
+                            text = uiState.content,
+                            style = ty.bodyMedium.copy(
+                                fontSize = 14.sp,
+                                lineHeight = (14 * 1.7).sp,
+                            ),
+                            color = cs.onBackground,
+                        )
+                    }
+
+                    // Tags (hashtags extracted from content)
+                    val hashtags = "#\\w+".toRegex()
+                        .findAll(uiState.content)
+                        .map { it.value }
+                        .distinct()
+                        .toList()
+                    if (hashtags.isNotEmpty()) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(hashtags) { tag ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(cs.surfaceVariant)
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = tag,
+                                        style = ty.labelSmall.copy(
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 12.sp,
+                                        ),
+                                        color = cs.onBackground,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Remaining images (index 1+)
+                    if (uiState.imageUris.size > 1) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            uiState.imageUris.drop(1).forEach { uri ->
+                                AsyncImage(
+                                    model = uri,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(220.dp),
                                 )
                             }
                         }
                     }
                 }
+                Spacer(Modifier.height(40.dp))
+            }
+        } else {
+            // ── EDIT MODE ─────────────────────────────────────────────────────
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                ) {
+                    // Date label
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        text = dateString,
+                        style = ty.labelSmall.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.5.sp,
+                        ),
+                        color = cs.onSurfaceVariant,
+                    )
 
-                // ── Hashtags display ─────────────────────────────────────────
-                val hashtagPattern = "#\\w+".toRegex()
-                val hashtags = hashtagPattern.findAll(uiState.content).map { it.value }.distinct().toList()
-                if (hashtags.isNotEmpty()) {
-                    Spacer(Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(hashtags) { hashtag ->
-                                androidx.compose.material3.OutlinedButton(
-                                    onClick = { },
-                                    modifier = Modifier.height(32.dp),
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = androidx.compose.foundation.BorderStroke(
-                                        1.dp,
-                                        cs.primary
+                    Spacer(Modifier.height(32.dp))
+
+                    // Title input
+                    BasicTextField(
+                        value = uiState.title,
+                        onValueChange = {
+                            viewModel.updateTitle(it)
+                            viewModel.clearValidationError()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = ty.headlineMedium.copy(
+                            fontWeight = FontWeight.Light,
+                            fontSize = 28.sp,
+                            lineHeight = 34.sp,
+                            color = cs.onBackground,
+                        ),
+                        cursorBrush = SolidColor(cs.onBackground),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        decorationBox = { inner ->
+                            if (uiState.title.isEmpty()) {
+                                Text(
+                                    text = "Entry Title",
+                                    style = ty.headlineMedium.copy(
+                                        fontWeight = FontWeight.Light,
+                                        fontSize = 28.sp,
+                                        color = cs.outline,
                                     )
-                                ) {
-                                    Text(
-                                        text = hashtag,
-                                        style = ty.labelSmall,
-                                        color = cs.primary
-                                    )
-                                }
+                                )
                             }
-                        }
+                            inner()
+                        },
+                    )
+
+                    if (uiState.validationError != null) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = uiState.validationError!!,
+                            style = ty.labelSmall,
+                            color = cs.error,
+                        )
                     }
+
+                    Spacer(Modifier.height(32.dp))
                 }
-            } else {
-                // Editable RichTextEditor in edit mode
+
+                // Rich text editor (body)
                 RichTextEditor(
                     state = richState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 20.dp)
                         .height(320.dp),
                     placeholder = {
                         Text(
                             text = "How was your day?",
-                            style = ty.displaySmall.copy(
-                                lineHeight = 32.sp,
-                                color = cs.outline.copy(alpha = 0.6f),
-                                fontWeight = FontWeight.Medium,
-                                textAlign = TextAlign.Center
+                            style = ty.bodyMedium.copy(
+                                fontSize = 16.sp,
+                                lineHeight = (16 * 1.6).sp,
+                                color = cs.outline,
                             ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 32.dp),
-                            textAlign = TextAlign.Center
                         )
                     },
-                    textStyle = ty.bodyLarge.copy(
-                        lineHeight = 26.sp,
+                    textStyle = ty.bodyMedium.copy(
+                        fontSize = 16.sp,
+                        lineHeight = (16 * 1.6).sp,
                         color = cs.onBackground,
                     ),
                     colors = RichTextEditorDefaults.richTextEditorColors(
@@ -450,33 +508,10 @@ fun DiaryDetailPage(
                         unfocusedIndicatorColor = Color.Transparent,
                     ),
                 )
-            }
 
-            // ── Selected images strip ─────────────────────────────────────────
-            if (uiState.imageUris.isNotEmpty()) {
-                Spacer(Modifier.height(12.dp))
-                if (uiState.isViewMode) {
-                    // Full-width images in view mode
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        uiState.imageUris.forEach { uri ->
-                            AsyncImage(
-                                model = uri,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(240.dp)
-                                    .clip(RoundedCornerShape(12.dp)),
-                            )
-                        }
-                    }
-                } else {
-                    // Horizontal scroll in edit mode
+                // Image thumbnails (horizontal strip)
+                if (uiState.imageUris.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(horizontal = 20.dp),
@@ -490,27 +525,9 @@ fun DiaryDetailPage(
                         }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
             }
-
-            Spacer(Modifier.height(16.dp))
-
-            // ── Bottom toolbar ────────────────────────────────────────────────
-            DiaryBottomToolbar(
-                wordCount = uiState.wordCount,
-                charCount = uiState.content.length,
-                isLoadingLocation = uiState.isLoadingLocation,
-                isSavingDraft = uiState.isSavingDraft,
-                draftSavedIndicator = uiState.draftSavedIndicator,
-                onImageClick = { imageLauncher.launch("image/*") },
-                onLocationClick = {
-                    if (locationPerms.allPermissionsGranted) {
-                        viewModel.fetchAndInsertLocation()
-                    } else {
-                        locationPerms.launchMultiplePermissionRequest()
-                    }
-                },
-                onTtsClick = { viewModel.onTtsClick() },
-            )
         }
     }
 
@@ -539,262 +556,118 @@ fun DiaryDetailPage(
     }
 }
 
-// ─── Top Bar ───────────────────────────────────────────────────────────────────
-
-@Composable
-private fun DiaryDetailTopBar(
-    isNew: Boolean,
-    isViewMode: Boolean,
-    isSaving: Boolean,
-    isDeleting: Boolean,
-    isSavingDraft: Boolean,
-    draftSavedIndicator: String?,
-    title: String,
-    content: String,
-    onBack: () -> Unit,
-    onSave: () -> Unit,
-    onDelete: () -> Unit,
-    onShare: () -> Unit,
-    onCopied: () -> Unit,
-) {
-    val cs = MaterialTheme.colorScheme
-    val ty = MaterialTheme.typography
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(cs.background)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Back button
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = cs.onBackground,
-                    modifier = Modifier.size(22.dp),
-                )
-            }
-
-            // Title (centered)
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = if (isNew) "New diary" else "Edit diary",
-                    style = ty.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = cs.onBackground,
-                    textAlign = TextAlign.Center,
-                )
-                // Show draft saved indicator
-                if (draftSavedIndicator != null) {
-                    Text(
-                        text = draftSavedIndicator,
-                        style = ty.labelSmall,
-                        color = cs.onSurfaceVariant,
-                    )
-                }
-            }
-
-            // Action buttons (share/copy/delete when viewing, save otherwise)
-            if (isViewMode) {
-                Row(
-                    modifier = Modifier.width(160.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onCopied, modifier = Modifier.size(40.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Copy",
-                            tint = cs.onBackground,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-                    IconButton(onClick = onShare, modifier = Modifier.size(40.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Share",
-                            tint = cs.onBackground,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-                    if (isDeleting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = cs.onBackground,
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        IconButton(onClick = onDelete, modifier = Modifier.size(40.dp)) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = cs.error,
-                                modifier = Modifier.size(20.dp),
-                            )
-                        }
-                    }
-                }
-            } else if (isSaving) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = cs.onBackground,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                TextButton(onClick = onSave, enabled = title.isNotEmpty()) {
-                    Text(
-                        text = "Save",
-                        style = ty.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                        ),
-                        color = if (title.isNotEmpty()) cs.onBackground else cs.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
-                }
-            }
-        }
-
-        HorizontalDivider(color = cs.outline, thickness = 1.dp)
-    }
-}
-
 // ─── Bottom Toolbar ───────────────────────────────────────────────────────────
 
 @Composable
 private fun DiaryBottomToolbar(
     wordCount: Int,
-    charCount: Int,
-    isLoadingLocation: Boolean,
     isSavingDraft: Boolean,
     draftSavedIndicator: String?,
+    isLoadingLocation: Boolean,
     onImageClick: () -> Unit,
+    onMicClick: () -> Unit,
+    onTagClick: () -> Unit,
     onLocationClick: () -> Unit,
-    onTtsClick: () -> Unit,
 ) {
     val cs = MaterialTheme.colorScheme
     val ty = MaterialTheme.typography
-    val contentCharWarning = 5000
-    val showCharWarning = charCount > contentCharWarning
 
     Column {
-        // Show char count warning if needed
-        if (showCharWarning) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(cs.errorContainer)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Character limit warning",
-                    style = ty.labelSmall,
-                    color = cs.onErrorContainer,
-                )
-                Text(
-                    text = "$charCount / $contentCharWarning",
-                    style = ty.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = cs.onErrorContainer,
-                )
-            }
-        }
-
-        HorizontalDivider(
-            color = cs.outline,
-            thickness = 1.dp,
-        )
+        HorizontalDivider(color = cs.outline, thickness = 1.dp)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(52.dp)
                 .background(cs.background)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            // ── Image picker icon ──────────────────────────────────────────
-            IconButton(onClick = onImageClick) {
+            // Left: action icons
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
                 Icon(
-                    painter = painterResource(android.R.drawable.ic_menu_gallery),
+                    painter = painterResource(R.drawable.ic_image),
                     contentDescription = "Add image",
                     tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onImageClick,
+                        )
                 )
-            }
-
-            // ── Voice icon (placeholder for future implementation) ────────────
-            IconButton(onClick = { }) {
                 Icon(
-                    painter = painterResource(android.R.drawable.ic_btn_speak_now),
-                    contentDescription = "Record voice note",
+                    painter = painterResource(R.drawable.ic_mic),
+                    contentDescription = "Record voice",
                     tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onMicClick,
+                        )
                 )
-            }
-
-            // ── Link icon (placeholder for future implementation) ──────────────
-            IconButton(onClick = { }) {
                 Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Insert link",
+                    painter = painterResource(R.drawable.ic_tag),
+                    contentDescription = "Add tag",
                     tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onTagClick,
+                        )
                 )
-            }
-
-            // ── Location icon ──────────────────────────────────────────────
-            IconButton(onClick = onLocationClick) {
                 if (isLoadingLocation) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(22.dp),
                         color = cs.onSurfaceVariant,
                         strokeWidth = 2.dp,
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.LocationOn,
+                        painter = painterResource(R.drawable.ic_map_pin),
                         contentDescription = "Insert location",
                         tint = cs.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onLocationClick,
+                            )
                     )
                 }
             }
 
-            Spacer(Modifier.weight(1f))
-
-            // ── Draft saving indicator ──────────────────────────────────────
-            if (isSavingDraft) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
+            // Right: draft status / word count
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                if (isSavingDraft) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(12.dp),
                         color = cs.onSurfaceVariant,
                         strokeWidth = 1.5.dp,
                     )
-                    Text(
-                        text = "Saving draft...",
-                        style = ty.labelSmall,
-                        color = cs.onSurfaceVariant,
-                    )
                 }
+                Text(
+                    text = when {
+                        isSavingDraft -> "Saving..."
+                        draftSavedIndicator != null -> draftSavedIndicator
+                        else -> "$wordCount words"
+                    },
+                    style = ty.labelSmall.copy(fontSize = 13.sp),
+                    color = cs.onSurfaceVariant,
+                )
             }
-
-            // ── Word count ─────────────────────────────────────────────────
-            Text(
-                text = "$wordCount words",
-                style = ty.labelMedium,
-                color = cs.onSurfaceVariant,
-            )
         }
     }
 }
@@ -806,6 +679,8 @@ private fun DiaryImageThumbnail(
     uri: Uri,
     onRemove: () -> Unit,
 ) {
+    val cs = MaterialTheme.colorScheme
+
     Box(modifier = Modifier.size(96.dp)) {
         AsyncImage(
             model = uri,
@@ -815,7 +690,6 @@ private fun DiaryImageThumbnail(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(10.dp)),
         )
-        // Remove button
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -827,7 +701,7 @@ private fun DiaryImageThumbnail(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Default.Close,
+                painter = painterResource(R.drawable.ic_x),
                 contentDescription = "Remove image",
                 tint = Color.White,
                 modifier = Modifier.size(12.dp),
