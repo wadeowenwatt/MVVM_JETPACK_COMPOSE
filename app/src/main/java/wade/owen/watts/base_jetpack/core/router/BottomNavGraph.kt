@@ -6,9 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import wade.owen.watts.base_jetpack.R
-import wade.owen.watts.base_jetpack.ui.pages.calendar.CalendarPage
 import wade.owen.watts.base_jetpack.ui.pages.diary.DiaryPage
-import wade.owen.watts.base_jetpack.ui.pages.profile.ProfilePage
 import wade.owen.watts.base_jetpack.ui.pages.quote_page.QuotePage
 import wade.owen.watts.base_jetpack.ui.pages.setting.SettingPage
 
@@ -25,23 +23,11 @@ enum class BottomNavDestination(
         R.drawable.ic_list,
         "List Diary"
     ),
-    CALENDAR(
-        "calendar",
-        R.string.bottom_nav_calendar,
-        R.drawable.ic_calendar,
-        "Calendar Page"
-    ),
     QUOTES(
         "quotes",
         R.string.bottom_nav_quotes,
         R.drawable.ic_quote,
         "Quotes"
-    ),
-    PROFILE(
-        "profile",
-        R.string.bottom_nav_profile,
-        R.drawable.ic_user,
-        "Profile"
     ),
     SETTING(
         "setting",
@@ -60,9 +46,7 @@ fun NavGraphBuilder.bottomNavGraph(navController: NavHostController) {
             composable(destination.route) {
                 when (destination) {
                     BottomNavDestination.DIARY -> DiaryPage(navController = navController)
-                    BottomNavDestination.CALENDAR -> CalendarPage(navController = navController)
                     BottomNavDestination.QUOTES -> QuotePage()
-                    BottomNavDestination.PROFILE -> ProfilePage()
                     BottomNavDestination.SETTING -> SettingPage()
                 }
             }

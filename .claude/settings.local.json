@@ -11,7 +11,10 @@
       "Bash(./gradlew assembleDebug:*)",
       "Bash(./gradlew compileDebugKotlin:*)",
       "Skill(update-config)",
-      "Bash(java *)"
+      "Bash(java *)",
+      "mcp__adb-mcp__get_screenshot",
+      "mcp__adb-mcp__get_uilayout",
+      "mcp__adb-mcp__execute_adb_shell_command"
     ]
   }
 }
